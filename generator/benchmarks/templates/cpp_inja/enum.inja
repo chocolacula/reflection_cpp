@@ -1,0 +1,29 @@
+#pragma once
+
+#include <frozen/unordered_map.h>
+#include <string_view>
+
+#include "../../src/expected/expectedString.h"
+#include "../../src/info/enumInfo.h"
+#include "../enum.h"
+
+template <>
+class EnumInfo<{{name}}> {
+ public:
+  static ExpectedString to_string(const {{name}} constant) {
+    if (_constants.count(constant) != 0)
+      return _constants.at(constant);
+
+    return Error("Cannot find the constant");
+  }
+
+ private:
+  static constexpr frozen::unordered_map<TheEnumClass, std::string_view, {{length(enums)}}> _constants = {
+    {% for item in enums -%}
+    {%- if not loop.is_last -%}
+      {{"{"}}{{name}}::{{item}}, "{{item}}"},
+    {% else -%}
+      {{"{"}}{{name}}::{{item}}, "{{item}}"}};
+    {%- endif -%}
+    {%- endfor -%}
+};

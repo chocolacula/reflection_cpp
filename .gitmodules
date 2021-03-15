@@ -1,0 +1,12 @@
+[submodule "frozen"]
+	path = frozen
+	url = https://github.com/serge-sans-paille/frozen.git
+[submodule "generator/inja"]
+	path = generator/inja
+	url = https://github.com/pantor/inja.git
+[submodule "generator/tests/googletest"]
+	path = googletest
+	url = https://github.com/google/googletest.git
+[submodule "generator/RE-flex"]
+	path = generator/RE-flex
+	url = https://github.com/Genivia/RE-flex.git

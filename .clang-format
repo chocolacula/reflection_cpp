@@ -1,0 +1,15 @@
+BasedOnStyle: Google
+
+KeepEmptyLinesAtTheStartOfBlocks: true
+ColumnLimit: 120
+
+AllowShortIfStatementsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowAllArgumentsOnNextLine: false
+
+AlwaysBreakTemplateDeclarations: true
+
+DerivePointerAlignment: false
+PointerAlignment: Left
+
+StatementMacros: [REX_ENUM, REX_OBJECT, REX_WITH_PRIVATE, REX_NAME, REX_INCLUDE, REX_EXCLUDE]
