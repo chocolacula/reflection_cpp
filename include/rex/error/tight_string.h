@@ -6,6 +6,11 @@
 
 namespace rr {
 
+/// union object to tightly pack std::string and std::string_view together
+/// the main idea to determine which one is in the memory is
+/// compare sizes, because std::string(32 bytes) is bigger then std::string_view(16 bytes)
+/// size of both of them is a multiple of unsigned long(32 or 64 bits)
+/// if last two words are zeroes TightString contains std::string_view
 union TightString {
 
   TightString(const TightString& data) {
@@ -62,7 +67,8 @@ union TightString {
     new (&this->owned) std::string(std::move(owned));
   }
 
-  TightString(){};
+  TightString() {
+  };
 
   ~TightString() {
     if (is_owned())
@@ -71,6 +77,7 @@ union TightString {
 
   [[nodiscard]] bool is_owned() const {
     auto const n = sizeof(std::string) / sizeof(unsigned long);
+    // last two words are zeroes
     return (_raw[n - 2] | _raw[n - 1]) != 0;
   }
 

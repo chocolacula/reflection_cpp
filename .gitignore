@@ -3,3 +3,4 @@
 .vscode
 output
 build
+cmake-build*

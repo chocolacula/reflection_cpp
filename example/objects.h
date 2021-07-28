@@ -3,7 +3,6 @@
 #include <cstddef>
 
 #include "rex/attributes.h"
-#include "rex/info/type_info.h"
 
 RR_OBJECT()
 struct TheStruct1 {
@@ -15,28 +14,29 @@ struct TheStruct1 {
   RR_NAME(server_port)
   int port = 8080;
 
+  std::vector<std::vector<int>> error_codes = {{400, 404, 502}, {600, 601}};
+
   RR_EXCLUDE
-  int timeout = 120;
+  float timeout = 6.5;
 };
 
 RR_OBJECT()
 struct TheStruct2 {
-  friend class rr::TypeInfo<TheStruct2>;
-
   TheStruct2() {
   }
 
-  [[nodiscard]] std::string_view get_host() const {
+  std::string_view get_host() const {
     return _host;
   }
 
-  [[nodiscard]] int get_port() const {
+  int get_port() const {
     return _port;
   }
 
  private:
   RR_NAME(host)
   std::string _host = "localhost";
+
   RR_NAME(server_port)
   int _port = 8080;
 };

@@ -8,9 +8,9 @@ namespace rr {
 
 class Serializer {
  public:
-  virtual void to_field(const char* name, FieldInfo info, void* object) = 0;
+  virtual void to_field(const char* name, FieldInfo info) = 0;
 
-  virtual void from_field(const char* name, FieldInfo info, const void* object) = 0;
+  virtual void from_field(const char* name, FieldInfo info) = 0;
 };
 
 }  // namespace rr

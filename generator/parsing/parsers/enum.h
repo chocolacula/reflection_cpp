@@ -7,7 +7,7 @@
 #include "../error_parse.h"
 #include "../lexers/compiled/cpp_source.yy.h"
 #include "nlohmann/json.hpp"
-#include "rex/expected/expected.h"
+#include "rex/expected.h"
 #include "states/enum.h"
 
 // parses only one enum and ends execution

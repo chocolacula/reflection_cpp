@@ -1,101 +1,140 @@
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
+#include <array>
 #include <string_view>
+#include <vector>
 
 namespace rr {
 
-template <int N>
-class CInt : public CInt<N - 1> {
- public:
-  static constexpr const int kValue = N;
-};
-
-template <>
-class CInt<0> {
- public:
-  static constexpr const int kValue = 0;
-};
-
 struct TypeId {
 
+  TypeId() = delete;
+
+  /// the main function of TypeId mechanism
+  /// it is specializing for each type in some files
   template <typename T>
-  static constexpr int get() {
-    return -1;
+  static TypeId get(T* ptr) {
+    return TypeId(0);
   }
 
-  static constexpr int max_id() {
-    return kId;
+  /// proxy function for using with implicit type in TypeId::get<T>() way without argument
+  template <typename T>
+  static TypeId get() {
+    return get(static_cast<T*>(nullptr));
+  }
+
+  // template <typename T>
+  // static TypeId get(const T& ref) {
+  //   return TypeId(0);
+  // }
+
+  // only definitions, it works throughout overloading, without specialization
+  template <typename T>
+  static TypeId get(std::vector<T>* vector);
+
+  template <typename T, size_t size>
+  static TypeId get(T (*array)[size]);
+
+  template <typename T, size_t size>
+  static TypeId get(std::array<T, size>* array);
+
+  bool operator==(const TypeId& other) const {
+    return _id == other._id;
+  }
+
+  bool operator!=(const TypeId& other) const {
+    return _id != other._id;
+  }
+
+  size_t number() const {
+    return _id;
   }
 
  private:
-  static constexpr inline int kId = 13;
+  size_t _id;
+
+  explicit TypeId(size_t id) : _id(id) {
+  }
 };
 
-template <>
-constexpr int TypeId::get<float>() {
-  return 0;
-}
-
-template <>
-constexpr int TypeId::get<double>() {
-  return 1;
-}
-
-template <>
-constexpr int TypeId::get<int8_t>() {
-  return 2;
-}
-
-template <>
-constexpr int TypeId::get<uint8_t>() {
-  return 3;
-}
-
-template <>
-constexpr int TypeId::get<int16_t>() {
-  return 4;
-}
-
-template <>
-constexpr int TypeId::get<uint16_t>() {
-  return 5;
-}
-
-template <>
-constexpr int TypeId::get<int32_t>() {
-  return 6;
-}
-
-template <>
-constexpr int TypeId::get<uint32_t>() {
-  return 7;
-}
-
-template <>
-constexpr int TypeId::get<int64_t>() {
-  return 8;
-}
-
-template <>
-constexpr int TypeId::get<uint64_t>() {
-  return 9;
-}
-
-template <>
-constexpr int TypeId::get<std::string>() {
-  return 10;
-}
-
-template <>
-constexpr int TypeId::get<const char*>() {
-  return 11;
-}
-
-template <>
-constexpr int TypeId::get<std::string_view>() {
-  return 12;
-}
+// template <typename T>
+// constexpr TypeId TypeId::get(T[] /**/) {
+//   auto id = TypeId::get<T>();
+//   id._is_sequence = true;
+//
+//   return id;
+// }
+//
+// template <typename T, size_t N>
+// constexpr TypeId TypeId::get(std::array<T, N>& /**/) {
+//   auto id = TypeId::get<T>();
+//   id._is_sequence = true;
+//
+//   return id;
+// }
+//
+// template <typename T>
+// constexpr TypeId TypeId::get(std::vector<T>& /**/) {
+//   auto id = TypeId::get<T>();
+//   id._is_sequence = true;
+//
+//   return id;
+// }
+//
+// template <typename T>
+// constexpr TypeId TypeId::get(std::list<T>& /**/) {
+//   auto id = TypeId::get<T>();
+//   id._is_sequence = true;
+//
+//   return id;
+// }
+//
+// template <typename T>
+// constexpr TypeId TypeId::get(std::stack<T>& /**/) {
+//   auto id = TypeId::get<T>();
+//   id._is_sequence = true;
+//
+//   return id;
+// }
+//
+// template <typename T>
+// constexpr TypeId TypeId::get(std::deque<T>& /**/) {
+//   auto id = TypeId::get<T>();
+//   id._is_sequence = true;
+//
+//   return id;
+// }
+//
+// template <typename T>
+// constexpr TypeId TypeId::get(std::unordered_set<T>& /**/) {
+//   auto id = TypeId::get<T>();
+//   id._is_sequence = true;
+//
+//   return id;
+// }
+//
+// template <typename T>
+// constexpr TypeId TypeId::get(std::set<T>& /**/) {
+//   auto id = TypeId::get<T>();
+//   id._is_sequence = true;
+//
+//   return id;
+// }
+//
+// template <typename KeyT, typename ValueT>
+// constexpr TypeId TypeId::get(std::unordered_map<KeyT, ValueT>& /**/) {
+//   TypeId id(TypeId::get<KeyT>(), TypeId::get<ValueT>());
+//   id._is_dictionary = true;
+//
+//   return id;
+// }
+//
+// template <typename KeyT, typename ValueT>
+// constexpr TypeId TypeId::get(std::map<KeyT, ValueT>& /**/) {
+//   TypeId id(TypeId::get<KeyT>(), TypeId::get<ValueT>());
+//   id._is_dictionary = true;
+//
+//   return id;
+// }
 
 }  // namespace rr

@@ -3,7 +3,7 @@
 #include "rex/attributes.h"
 
 RR_ENUM
-enum class TheEnumClass { kWhite, kRed, kGreen, kBlue, kBlack };
+enum class Colors { kWhite, kRed, kGreen, kBlue, kBlack };
 
 RR_ENUM
-enum TheEnum { kWhite, kRed, kGreen, kBlue, kBlack };
+enum Animals { kCat, kDog, kGiraffe, kRhino, kDeer };

@@ -19,8 +19,8 @@ link_directories(../RE-flex/lib)
 
 
 set(SOURCES
-  parsing/lexers/compiled/cpp_source.yy.cpp
-  main.cpp)
+        parsing/lexers/compiled/cpp_source.yy.cpp
+        main.cpp ../include/rex/types/helper.h ../include/rex/constexpr_map.h ../include/rex/reflection/print_actions.h ../include/rex/reflection/type_actions.h ../include/rex/reflection/reflect_actions.h)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 

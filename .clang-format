@@ -7,9 +7,9 @@ AllowShortIfStatementsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: None
 AllowAllArgumentsOnNextLine: false
 
-AlwaysBreakTemplateDeclarations: true
+AlwaysBreakTemplateDeclarations: Yes
 
 DerivePointerAlignment: false
 PointerAlignment: Left
 
-StatementMacros: [REX_ENUM, REX_OBJECT, REX_WITH_PRIVATE, REX_NAME, REX_INCLUDE, REX_EXCLUDE]
+StatementMacros: [RR_ENUM, RR_OBJECT, RR_WITH_PRIVATE, RR_NAME, REX_EXCLUDE]

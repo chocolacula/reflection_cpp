@@ -17,7 +17,7 @@ TEST(ParseTest, Enum) {
 
   LexerCpp lexer(input);
 
-  auto data = parse(&lexer).get();
+  auto data = parse(&lexer).unwrap();
 
   bool is_valid = data["name"] == "EnumClass1"        //
                   && data["constants"][0] == "White"  //
@@ -28,7 +28,7 @@ TEST(ParseTest, Enum) {
 
   ASSERT_TRUE(is_valid);
 
-  data = parse(&lexer).get();
+  data = parse(&lexer).unwrap();
   is_valid = data["name"] == "EnumClass2"        //
              && data["constants"][0] == "White"  //
              && data["constants"][1] == "Red"    //
@@ -38,7 +38,7 @@ TEST(ParseTest, Enum) {
 
   ASSERT_TRUE(is_valid);
 
-  data = parse(&lexer).get();
+  data = parse(&lexer).unwrap();
 
   is_valid = data["name"] == "EnumClass3"        //
              && data["constants"][0] == "White"  //
@@ -48,7 +48,7 @@ TEST(ParseTest, Enum) {
 
   ASSERT_TRUE(is_valid);
 
-  data = parse(&lexer).get();
+  data = parse(&lexer).unwrap();
   is_valid = data["name"] == "EnumClass4"        //
              && data["constants"][0] == "white"  //
              && data["constants"][1] == "red"    //
@@ -58,19 +58,19 @@ TEST(ParseTest, Enum) {
 
   ASSERT_TRUE(is_valid);
 
-  data = parse(&lexer).get();
+  data = parse(&lexer).unwrap();
   is_valid = data["name"] == "EnumClass5"           //
              && data["constants"][0] == "white_2";  //
 
   ASSERT_TRUE(is_valid);
 
-  data = parse(&lexer).get();
+  data = parse(&lexer).unwrap();
   is_valid = data["name"] == "EnumClass6"  //
              && data["constants"].empty();
 
   ASSERT_TRUE(is_valid);
 
-  data = parse(&lexer).get();
+  data = parse(&lexer).unwrap();
   is_valid = data["name"] == "TheEnum"           //
              && data["constants"][0] == "White"  //
              && data["constants"][1] == "Red"    //

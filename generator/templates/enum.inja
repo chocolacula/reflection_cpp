@@ -1,10 +1,11 @@
 #pragma once
 
 #include <frozen/unordered_map.h>
+
 #include <string_view>
 
+#include "rex/expected.h"
 #include "rex/expected/error.h"
-#include "rex/expected/expected.h"
 
 template <>
 class EnumInfo<{{name}}> {

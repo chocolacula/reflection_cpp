@@ -20,8 +20,8 @@ int main() {
 
       auto ex = EnumParser::parse(&input);
 
-      ex.unbind([](auto data) { std::cout << "found an enum with name " << data["name"] << std::endl; },
-                [](Error err) { std::cout << err.what() << std::endl; });
+      ex.match([](auto data) { std::cout << "found an enum with name " << data["name"] << std::endl; },
+               [](Error err) { std::cout << err.what() << std::endl; });
     }
     // this is another one root tag and it has to be separate world
     else if (word == "REX_STRUCT") {

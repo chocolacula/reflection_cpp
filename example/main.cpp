@@ -1,120 +1,112 @@
-
-// #include "example/struct.h"
-#include <cstddef>
-#include <cstdint>
 #include <iostream>
-#include <string_view>
-#include <typeinfo>
 
-#include "enum.h"
-#include "nlohmann/json.hpp"
-#include "object.h"
-#include "reflection.h"
-#include "rex/info/type_id.h"
-#include "rex/info/type_info.h"
-#include "rex/serializer/nlohmann_json_adapter.h"
+#include "handwritten/reflection.h"
+#include "objects.h"
 
 using namespace rr;
 
 int main() {
 
   // You can get an Enum constant string representation
-  auto expected_string = EnumInfo<TheEnumClass>::to_string(TheEnumClass::kWhite);
+  auto expected_string = EnumInfo<Colors>::to_string(Colors::kWhite);
 
   // and check if it does exist and everything got right
   if (!expected_string.is_error()) {
-    std::cout << "it's a string representation of " << expected_string.get() << "!" << std::endl;
+    fmt::print("it's a string representation of {}\n", expected_string.unwrap());
   }
 
   // or use type matching
-  expected_string.unbind([](std::string_view str) { std::cout << "Unbind " << str << std::endl; },
-                         [](Error err) { std::cout << err.what() << std::endl; });
+  expected_string.match([](std::string_view str) { fmt::print("Matched and printed: {}\n", str); },
+                        [](Error err) { fmt::print("{}\n", err.what()); });
+
+  std::cout << "\n";
+
+  // it is possible to parse enum constant from string value too
+  auto expected_enum = EnumInfo<Colors>::parse("kGreen");
+  expected_enum.match(  //
+      [](Colors constant) { fmt::print("kGreen has int value: {}\n", static_cast<int>(constant)); },
+      [](Error err) { fmt::print("Got an error: {}\n", err.what()); });
+
+  std::cout << "\n";
 
   // if the constant doesn't exist
-  auto expected_enum = EnumInfo<TheEnumClass>::parse("kGray");
+  expected_enum = EnumInfo<Colors>::parse("kGray");
 
   // An Error object with message will be returned
-  expected_enum.unbind(  //
-      [](TheEnumClass /*constant*/) { std::cout << "Unbind a constant" << std::endl; },
-      [](Error err) { std::cout << "\nCopy Error object and print message:\n"
-                                << err.what() << std::endl; });
+  expected_enum.match(  //
+      [](Colors /*constant*/) { fmt::print("Got an enum constant\n"); },
+      [](Error err) { fmt::print("Copy Error object and print message: {}\n", err.what()); });
 
   // Move version also available
-  expected_enum.unbind_move(  //
-      [](TheEnumClass /*constant*/) { std::cout << "Unbind a constant" << std::endl; },
-      [](Error err) { std::cout << "\nMove Error object and print message only once\n"
-                                << err.what() << std::endl; });
+  expected_enum.match_move(  //
+      [](Colors /*constant*/) { fmt::print("Got a constant\n"); },
+      [](Error err) { fmt::print("Move Error object and print message: {}\n", err.what()); });
 
-  std::cout << std::endl;
+  std::cout << "\n";
 
   // It works for old plain enum type but in this case there is no any generated code for TheEnum
-  EnumInfo<TheEnum>::to_string(TheEnum::kBlack)
-      .unbind([](std::string_view str) { std::cout << str << std::endl; },
-              [](Error err) { std::cout << err.what() << std::endl; });
+  EnumInfo<Animals>::to_string(Animals::kGiraffe)
+      .match([](std::string_view str) { fmt::print("{}\n", str); },
+             [](Error err) { fmt::print("Cannot translate an enum to string, error: {}\n", err.what()); });
 
-  std::cout << std::endl;
+  std::cout << "\n";
 
-  // And ofcourse you can use structs and classes via TypeInfo if they are standard_layout data types
-  TheStruct1 struct1;
+  //
+  //
+  //
+  TheStruct1 s;
 
-  // TypeInfo may be used in runtime by TypeId and global function
-  // or in compile time template class like TypeInfo<TheStruct1>::get_field
-  auto expected_value = type_info(TypeId::get<TheStruct1>()).get_field("server_port").get().get(&struct1);
+  auto info = Reflection::reflect(&s);
 
-  // ExpectedValue doesn't contain an Error because FieldInfo guarantees that it doesn't contain invalid value
-  // but nobody knows which type is it, to figure out it use type matching
-  expected_value.unbind([](int v) { std::cout << "This is int! " << v << std::endl; },
-                        [](auto&& /*v*/) { std::cout << "This is not int!" << std::endl; });
+  std::cout << Reflection::type_name(TypeId::get(&s.error_codes)) << "\n";
+  Reflection::print(info);
 
-  // ExpectedValue will return string_view even the field has string type
-  expected_value = TypeInfo<TheStruct1>::get_field("host").get().get(&struct1);
+  auto field_info = Reflection::reflect(&s.error_codes);
 
-  expected_value.unbind([](std::string_view v) { std::cout << "This is string_view! \"" << v << "\"" << std::endl; },
-                        [](auto&& /*v*/) { std::cout << "This is not string!" << std::endl; });
+  field_info.match(
+      [](Sequence s) {
+        bool done = false;
+        s.for_each([&done](Var entry) {
+          auto sub_seq_info = Reflection::reflect(entry);
 
-  std::cout << std::endl;
+          if (!done) {
+            sub_seq_info.match(
+                [](Sequence s) {
+                  s.clear();
 
-  // Setting a value also possible with runtime but fast type checking
-  auto ok = TypeInfo<TheStruct1>::get_field("server_port").get().set(&struct1, 9000);
+                  {
+                    int v = 1;
+                    s.push(Var(&v));
+                  }
+                  {
+                    int v = 2;
+                    s.push(Var(&v));
+                  }
+                  {
+                    int v = 3;
+                    s.push(Var(&v));
+                  }
+                },
+                [](auto&&) {});
+          }
 
-  if (ok.is_error()) {
-    std::cout << "An int value didn't set " << std::endl;
-  } else {
-    std::cout << "Set new int value " << std::endl;
-  }
+          done = true;
+        });
+      },
+      [](auto&&) {});
 
-  ok = TypeInfo<TheStruct1>::get_field("server_port").get().set(&struct1, 9000.2);
+  Reflection::print(info);
 
-  if (ok.is_error()) {
-    std::cout << "A double value didn't set " << std::endl;
-  } else {
-    std::cout << "Set new double value " << std::endl;
-  }
+  int arr[] = {11, 12, 13};
+  std::array<int, 2> std_arr = {7, 8};
 
-  std::cout << "\nThe field server_port now is " << struct1.port << "\n" << std::endl;
+  std::cout << Reflection::type_name(TypeId::get(&arr)) << std::endl;
+  std::cout << Reflection::type_name(TypeId::get(&std_arr)) << std::endl;
 
-  // And for sweet one you can serialize to struct and vice vera
-  auto input = nlohmann::json::parse(R"({ "host": "google.com", "server_port": 5000, "timeout": 10 })");
-  SerializerNlohmannJson input_adapter(&input);
+  auto std_arr_info = Reflection::reflect(&arr);
+  Reflection::print(std_arr_info);
 
-  TheStruct1 struct_new;
+  Reflection::print(Reflection::reflect(&std_arr));
 
-  TypeInfo<TheStruct1>::deserialize(&struct_new, &input_adapter);
-
-  struct_new.port = 5080;
-
-  nlohmann::json output;
-  SerializerNlohmannJson output_adapter(&output);
-  TypeInfo<TheStruct1>::serialize(&struct_new, &output_adapter);
-
-  std::cout << "struct_new after serialization is:\n" << output << std::endl;
-
-  // Deserialization of structs with private fields possible too
-  // but it must contains ALL private fields to be standard_layout data type
-  TheStruct2 struct2;
-  TypeInfo<TheStruct2>::deserialize(&struct2, &input_adapter);
-
-  std::cout << "\nstruct2 has only private fields:"        //
-            << "\n_host=\"" << struct2.get_host() << "\""  //
-            << "\n_port=" << struct2.get_port() << std::endl;
+  return 0;
 }

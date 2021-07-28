@@ -2,10 +2,8 @@
 
 #define RR_ENUM
 
-// TODO make support method serialization
-/// option could be FieldsOnly
-#define RR_OBJECT(option)
-#define RR_FOREING
+// options are: WithBase, WithPrivate
+#define RR_OBJECT(options...)
 
 #define RR_NAME(name)
 

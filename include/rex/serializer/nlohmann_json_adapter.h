@@ -15,6 +15,7 @@ class SerializerNlohmannJson : public Serializer {
   void to_field(const char* name, FieldInfo info, void* object) override {
 
     (*kFunctions[info.id()])(&(*_json)[name], info, object);
+
   }
 
   void from_field(const char* name, FieldInfo info, const void* object) override {
