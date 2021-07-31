@@ -24,7 +24,7 @@ int main() {
   // it is possible to parse enum constant from string value too
   auto expected_enum = EnumInfo<Colors>::parse("kGreen");
   expected_enum.match(  //
-      [](Colors constant) { fmt::print("kGreen has int value: {}\n", static_cast<int>(constant)); },
+      [](Colors constant) { fmt::print("kGreen has integer value: {}\n", static_cast<int>(constant)); },
       [](Error err) { fmt::print("Got an error: {}\n", err.what()); });
 
   std::cout << "\n";
@@ -73,6 +73,7 @@ int main() {
             sub_seq_info.match(
                 [](Sequence s) {
                   s.clear();
+                  s.var().rt_cast<std::vector<int>>().unwrap()->clear();
 
                   {
                     int v = 1;
@@ -97,16 +98,20 @@ int main() {
 
   Reflection::print(info);
 
-  int arr[] = {11, 12, 13};
-  std::array<int, 2> std_arr = {7, 8};
-
+  int arr[6] = {11, 12, 13};
+  Reflection::print(&arr);
   std::cout << Reflection::type_name(TypeId::get(&arr)) << std::endl;
+
+  std::array<int, 4> std_arr = {7, 8};
+  Reflection::print(Reflection::reflect(&std_arr));
   std::cout << Reflection::type_name(TypeId::get(&std_arr)) << std::endl;
 
-  auto std_arr_info = Reflection::reflect(&arr);
-  Reflection::print(std_arr_info);
+  std::unordered_map<int, std::string_view> m = {{1, "1"}, {33, "thirty three"}};
+  std::cout << Reflection::type_name(TypeId::get(&m)) << std::endl;
+  Reflection::print(&m);
 
-  Reflection::print(Reflection::reflect(&std_arr));
+  TheStruct2 s2;
+  Reflection::print(&s2);
 
   return 0;
 }

@@ -11,6 +11,8 @@ class TypeActions {
   friend class Reflection;
   friend class Primitive;
   friend class Sequence;
+  friend class Var;
+  friend class ConstVar;
 };
 
 }  // namespace rr

@@ -62,7 +62,7 @@ struct Expected : public BASE {
     auto pointer = std::get_if<T>(&(BASE::_content));
 
     if (pointer == nullptr) {
-      throw std::runtime_error("It unexpectedly doesn't contain a value");
+      throw std::runtime_error(std::get<Error>(BASE::_content).what().data());
     }
 
     return *pointer;

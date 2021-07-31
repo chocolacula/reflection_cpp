@@ -3,7 +3,11 @@
 #include <vector>
 
 #include "rex/reflection/type_actions.h"
-#include "strategies/array.h"
+#include "rex/type_info/variants/array/array.h"
+#include "strategies/deque.h"
+#include "strategies/list.h"
+#include "strategies/queue.h"
+#include "strategies/stack.h"
 #include "strategies/vector.h"
 
 namespace rr {
@@ -12,38 +16,28 @@ struct Sequence : public ISequence {
 
   Sequence() = delete;
 
-  template <typename T, size_t size_v>
-  explicit Sequence(T (*array)[size_v])
-      : _sequence(std::make_shared<ArrayStrategy<T, size_v>>(array)), _nested_type(TypeId::get<T>()) {
-  }
-
-  template <typename T, size_t size_v>
-  explicit Sequence(std::array<T, size_v>* array)
-      : _sequence(std::make_shared<ArrayStrategy<T, size_v>>(array)), _nested_type(TypeId::get<T>()) {
-  }
-
   template <template <typename T1> typename ContainerT, typename T>
   explicit Sequence(ContainerT<T>* container)  //
-      : _sequence(choose(container)), _nested_type(TypeId::get<T>()) {
+      : _sequence(choose_strategy(container)), _nested_type(TypeId::get<T>()) {
   }
-
-  /* Expected<None, Error> remove(Var value) {
-   * if (_type != value.type) {
-   *   return Error("The Sequence type("+ _type.name() +") and value type(" +  value.type.name() + ") are different");
-   * }
-   *
-   * SequenceHelper::remove(_type, _pointer, var.value);
-  }*/
 
   Var var() override {
     return _sequence->var();
   }
 
   Expected<Var> first() override {
+    if (_sequence->size() == 0) {
+      return Error("The sequence is empty");
+    }
+
     return _sequence->first();
   };
 
   Expected<Var> last() override {
+    if (_sequence->size() == 0) {
+      return Error("The sequence is empty");
+    }
+
     return _sequence->last();
   };
 
@@ -69,13 +63,42 @@ struct Sequence : public ISequence {
     return _sequence->push(element);
   }
 
+  Expected<None> pop() override {
+
+    if (_sequence->size() == 0) {
+      return Error("The sequence is empty");
+    }
+
+    return _sequence->pop();
+  }
+
  private:
   std::shared_ptr<ISequence> _sequence;
   TypeId _nested_type;
 
   template <typename T>
-  std::shared_ptr<ISequence> choose(std::vector<T>* vector) {
-    return std::make_shared<VectorStrategy<T>>(vector);
+  std::shared_ptr<ISequence> choose_strategy(std::vector<T>* vector) {
+    return std::make_shared<strategy::Vector<T>>(vector);
+  }
+
+  template <typename T>
+  std::shared_ptr<ISequence> choose_strategy(std::list<T>* list) {
+    return std::make_shared<strategy::List<T>>(list);
+  }
+
+  template <typename T>
+  std::shared_ptr<ISequence> choose_strategy(std::stack<T>* stack) {
+    return std::make_shared<strategy::Stack<T>>(stack);
+  }
+
+  template <typename T>
+  std::shared_ptr<ISequence> choose_strategy(std::queue<T>* queue) {
+    return std::make_shared<strategy::Queue<T>>(queue);
+  }
+
+  template <typename T>
+  std::shared_ptr<ISequence> choose_strategy(std::deque<T>* deque) {
+    return std::make_shared<strategy::Deque<T>>(deque);
   }
 };
 

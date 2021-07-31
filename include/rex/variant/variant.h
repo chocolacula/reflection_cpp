@@ -22,22 +22,14 @@ struct Variant {
   }
 
   template <typename... FuncT>
-  void match(FuncT... functions) {
-    std::visit(Overloaded{ functions... }, _content);
+  decltype(auto) match(FuncT... functions) {
+    return std::visit(Overloaded{functions...}, _content);
   }
 
   template <typename... FuncT>
-  void match_move(FuncT... functions) {
-    std::visit(Overloaded{ functions... }, std::move(_content));
+  decltype(auto) match_move(FuncT... functions) {
+    return std::visit(Overloaded{functions...}, std::move(_content));
   }
-
-  // void unbind(std::function<void(T)> on_value, std::function<void(ErrorT)> on_error) {
-  //   std::visit(Overloaded{on_value, on_error}, _content);
-  // }
-  //
-  // void unbind_move(std::function<void(T)> on_value, std::function<void(ErrorT)> on_error) {
-  //   std::visit(Overloaded{on_value, on_error}, std::move(_content));
-  // }
 
   template <typename SomeT>
   SomeT get() {

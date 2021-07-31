@@ -4,6 +4,8 @@
 
 #include "rex/expected.h"
 #include "rex/info/field_info.h"
+#include "rex/type_info/variants/array/array.h"
+#include "rex/type_info/variants/map/map.h"
 #include "rex/type_info/variants/object.h"
 #include "rex/type_info/variants/primitive.h"
 #include "rex/type_info/variants/sequence/sequence.h"
@@ -11,7 +13,7 @@
 
 namespace rr {
 
-#define BASE Variant<Primitive, Object, Sequence>
+#define BASE Variant<Primitive, Object, Array, Sequence, Map>
 
 /// The sum type contains information about nature of stored value
 ///
@@ -28,7 +30,13 @@ class TypeInfo : public BASE {
   TypeInfo(Object value) : BASE(value) { // NOLINT implicit constructor
   }
 
+  TypeInfo(Array value) : BASE(value) { // NOLINT implicit constructor
+  }
+
   TypeInfo(Sequence value) : BASE(value) { // NOLINT implicit constructor
+  }
+
+  TypeInfo(Map value) : BASE(value) { // NOLINT implicit constructor
   }
 
   // Expected<None> serialize(const void* object, Serializer* adapter) const {

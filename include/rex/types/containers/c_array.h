@@ -3,15 +3,13 @@
 #include "rex/the_great_table.h"
 #include "rex/types/helper.h"
 
-// #include "../info/values/dictionary.h"
-
 namespace rr {
 
 template <typename T, size_t size_v>
 struct TypeHelper<T[size_v]> {
 
-  static TypeInfo reflect(void* value) {
-    return TypeInfo(Sequence(static_cast<T(*)[size_v]>(value)));
+  static TypeInfo reflect(void* value, bool is_const) {
+    return TypeInfo(Array(static_cast<T(*)[size_v]>(value)));
   }
 
   static std::string_view type_name() {
@@ -44,15 +42,10 @@ struct TypeHelper<T[size_v]> {
     // do nothing array is already on the stack in 'memory'
     return true;
   }
-
-  // static Var dictionary_alloc_value(void* key_pointer, Dictioanary* dictioanary) {
-  //
-  //   return dictioanary->push_default(static_cast<std::vector<T>*>(key_pointer));
-  // }
 };
 
 template <typename T, size_t size_v>
-TypeId TypeId::get(T (*array)[size_v]) {
+TypeId TypeId::get(T (*/*unused*/)[size_v]) {
   static TypeId id(TheGreatTable::record(Actions(&TypeHelper<T[size_v]>::reflect,        //
                                                  &TypeHelper<T[size_v]>::type_name,      //
                                                  &TypeHelper<T[size_v]>::type_size,      //

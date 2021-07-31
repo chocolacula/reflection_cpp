@@ -5,14 +5,12 @@
 #include "rex/the_great_table.h"
 #include "rex/types/helper.h"
 
-// #include "../info/values/dictionary.h"
-
 namespace rr {
 
 template <typename T>
 struct TypeHelper<std::vector<T>> {
 
-  static TypeInfo reflect(void* value) {
+  static TypeInfo reflect(void* value, bool is_const) {
     return TypeInfo(Sequence(static_cast<std::vector<T>*>(value)));
   }
 
@@ -46,10 +44,6 @@ struct TypeHelper<std::vector<T>> {
     *static_cast<std::vector<T>*>(to) = std::vector<T>();
     return true;
   }
-  // static Var dictionary_alloc_value(void* key_pointer, Dictioanary* dictioanary) {
-  //
-  //   return dictioanary->push_default(static_cast<std::vector<T>*>(key_pointer));
-  // }
 };
 
 template <typename T>

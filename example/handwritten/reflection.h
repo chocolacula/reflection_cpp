@@ -1,16 +1,5 @@
 #include "rex/reflection/reflection.h"
-#include "rex/types/char.h"
-#include "rex/types/containers/c_array.h"
-#include "rex/types/containers/std_array.h"
-#include "rex/types/containers/vector.h"
-#include "rex/types/double.h"
-#include "rex/types/float.h"
-#include "rex/types/int32_t.h"
-#include "rex/types/int8_t.h"
-#include "rex/types/std_string.h"
-#include "rex/types/string_view.h"
-#include "rex/types/uint8_t.h"
-#include "rex/types/unknown.h"
+#include "rex/types/all_types.h"
 
 //*****//
 #include "reflected_types/TheEnumClass.rr.h"

@@ -1,17 +1,16 @@
 #pragma once
 
+#include "../the_great_table.h"
+#include "../var/cell.h"
 #include "helper.h"
-#include "rex/the_great_table.h"
-
-// #include "../info/values/dictionary.h"
 
 namespace rr {
 
 template <>
 struct TypeHelper<float> {
 
-  static TypeInfo reflect(void* value) {
-    return TypeInfo(Primitive(static_cast<float*>(value)));
+  static TypeInfo reflect(void* value, bool is_const) {
+    return TypeInfo(Primitive(Cell(static_cast<float*>(value), is_const)));
   }
 
   static std::string_view type_name() {
@@ -43,11 +42,6 @@ struct TypeHelper<float> {
     *static_cast<float*>(to) = float(0.0);
     return true;
   }
-
-  // static Var dictionary_alloc_value(void* key_pointer, Dictioanary* dictioanary) {
-  //
-  //   return dictioanary->push_default(static_cast<float*>(key_pointer));
-  // }
 };
 
 template <>

@@ -11,7 +11,7 @@ struct TheStruct1 {
 
   std::string host = "localhost";
 
-  RR_NAME(server_port)
+  RR_ALIAS(server_port)
   int port = 8080;
 
   std::vector<std::vector<int>> error_codes = {{400, 404, 502}, {600, 601}};
@@ -34,10 +34,10 @@ struct TheStruct2 {
   }
 
  private:
-  RR_NAME(host)
+  RR_ALIAS(host)
   std::string _host = "localhost";
 
-  RR_NAME(server_port)
+  RR_ALIAS(server_port)
   int _port = 8080;
 };
 
@@ -53,7 +53,7 @@ struct TheStruct3 {
   struct TheStruct4 {
     std::string host = "localhost";
 
-    RR_NAME(server_port)
+    RR_ALIAS(server_port)
     int port = 8080;
   } settings;
 };

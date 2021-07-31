@@ -12,7 +12,7 @@ namespace rr {
 template <>
 struct TypeHelper<TheStruct1> {
 
-  static TypeInfo reflect(void* value) {
+  static TypeInfo reflect(void* value, bool is_const) {
     auto p = static_cast<TheStruct1*>(value);
 
     return Object(Var(p), {{"host", Var(&p->host)},         //

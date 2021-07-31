@@ -7,12 +7,12 @@ namespace rr {
 
 struct Actions {
 
-  constexpr Actions(TypeInfo (*reflect)(void*),      //
-                    std::string_view (*get_name)(),  //
-                    size_t (*size)(),                //
-                    Var (*alloc_default)(),          //
-                    void (*call_delete)(void*),      //
-                    void (*copy)(void*, void*),      //
+  constexpr Actions(TypeInfo (*reflect)(void*, bool),  //
+                    std::string_view (*get_name)(),    //
+                    size_t (*size)(),                  //
+                    Var (*alloc_default)(),            //
+                    void (*call_delete)(void*),        //
+                    void (*copy)(void*, void*),        //
                     bool (*copy_default)(void*, size_t))
       : reflect(reflect),
         type_name(get_name),
@@ -28,7 +28,7 @@ struct Actions {
 
   // there is no reason to move the struct
 
-  TypeInfo (*reflect)(void*);
+  TypeInfo (*reflect)(void*, bool);
   std::string_view (*type_name)();
   size_t (*type_size)();
   Var (*alloc_default)();

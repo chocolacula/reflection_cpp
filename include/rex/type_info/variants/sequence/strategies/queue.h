@@ -1,60 +1,60 @@
 #pragma once
 
-#include <vector>
+#include <queue>
 
 #include "../isequence.h"
 
 namespace rr::strategy {
 
 template <typename T>
-struct Vector : public ISequence {
+struct Queue : public ISequence {
 
-  explicit Vector(std::vector<T>* vector)
-      : _vector(vector),  //
-        _type(TypeId::get(vector)) {
+  explicit Queue(std::queue<T>* queue)
+      : _queue(queue),  //
+        _type(TypeId::get(queue)) {
   }
 
   Var var() override {
-    return Var(_vector, _type);
+    return Var(_queue, _type);
   }
 
   Expected<Var> first() override {
-    return Var(&_vector->front());
+    return Var(&_queue->front());
   };
 
   Expected<Var> last() override {
-    return Var(&_vector->back());
+    return Var(&_queue->back());
   };
 
   void for_each(std::function<void(Var)> callback) override {
-    for (auto&& entry : *_vector) {
+    for (auto&& entry : *_queue) {
       callback(Var(&entry));
     }
   }
 
   void clear() override {
-    _vector->clear();
+    _queue->clear();
   }
 
   size_t size() override {
-    return _vector->size();
+    return _queue->size();
   }
 
   Expected<None> push(Var element) override {
 
-    _vector->push_back(*static_cast<T*>(element.raw()));
+    _queue->push(*static_cast<T*>(element.raw()));
     return None();
   }
 
   Expected<None> pop() override {
 
-    _vector->pop_back();
+    _queue->pop();
     return None();
   }
 
  private:
-  std::vector<T>* _vector;
+  std::queue<T>* _queue;
   TypeId _type;
 };
 
-}  // namespace rr
+}  // namespace rr::strategy

@@ -8,7 +8,7 @@ namespace rr {
 class Reflection {
  public:
   static TypeInfo reflect(Var variable) {
-    return TheGreatTable::data()[variable.type().number()].reflect(variable.value());
+    return TheGreatTable::data()[variable.type().number()].reflect(variable.raw(), variable.is_const());
   }
 
   template <typename T>
@@ -49,11 +49,11 @@ class Reflection {
   }
 
   static void call_delete(Var variable) {
-    TheGreatTable::data()[variable.type().number()].call_delete(variable.value());
+    TheGreatTable::data()[variable.type().number()].call_delete(variable.raw());
   }
 
   static void copy(Var from, Var to) {
-    TheGreatTable::data()[from.type().number()].copy(from.value(), to.value());
+    TheGreatTable::data()[from.type().number()].copy(from.raw(), to.raw());
   }
 
   static bool copy_default(TypeId id, void* to, size_t size) {
@@ -75,32 +75,43 @@ class Reflection {
           }
         },
         [result](Primitive p) {
-          p.match([result](float* v) { *result += std::to_string(*v); },     //
-                  [result](double* v) { *result += std::to_string(*v); },    //
-                  [result](int8_t* v) { *result += std::to_string(*v); },    //
-                  [result](uint8_t* v) { *result += std::to_string(*v); },   //
-                  [result](int16_t* v) { *result += std::to_string(*v); },   //
-                  [result](uint16_t* v) { *result += std::to_string(*v); },  //
-                  [result](int32_t* v) { *result += std::to_string(*v); },   //
-                  [result](uint32_t* v) { *result += std::to_string(*v); },  //
-                  [result](int64_t* v) { *result += std::to_string(*v); },   //
-                  [result](uint64_t* v) { *result += std::to_string(*v); },  //
-                  [result](std::string* v) {
+          p.match([result](Cell<bool> v) { *result += *v.ptr() ? "true" : "false"; },   //
+                  [result](Cell<float> v) { *result += std::to_string(*v.ptr()); },     //
+                  [result](Cell<double> v) { *result += std::to_string(*v.ptr()); },    //
+                  [result](Cell<int8_t> v) { *result += std::to_string(*v.ptr()); },    //
+                  [result](Cell<uint8_t> v) { *result += std::to_string(*v.ptr()); },   //
+                  [result](Cell<int16_t> v) { *result += std::to_string(*v.ptr()); },   //
+                  [result](Cell<uint16_t> v) { *result += std::to_string(*v.ptr()); },  //
+                  [result](Cell<int32_t> v) { *result += std::to_string(*v.ptr()); },   //
+                  [result](Cell<uint32_t> v) { *result += std::to_string(*v.ptr()); },  //
+                  [result](Cell<int64_t> v) { *result += std::to_string(*v.ptr()); },   //
+                  [result](Cell<uint64_t> v) { *result += std::to_string(*v.ptr()); },  //
+                  [result](Cell<std::string> v) {
                     *result += "'";
-                    *result += *v;
-                    *result += "'";
-                  },
-                  [result](const char* v) {
-                    *result += "'";
-                    *result += *v;
+                    *result += *v.ptr();
                     *result += "'";
                   },
-                  [result](std::string_view* v) {
+                  [result](Cell<std::string_view> v) {
                     *result += "'";
-                    *result += *v;
+                    *result += *v.ptr();
                     *result += "'";
                   },
                   [](auto&&) {});
+        },
+        [result](Array a) {
+          *result += "[";
+
+          a.for_each([result](Var entry) {
+            auto entry_info = reflect(entry);
+
+            append(entry_info, result);
+            *result += ", ";
+          });
+          if ((*result)[result->size() - 2] == ',') {
+            result->replace(result->size() - 2, 2, "]");
+          } else {
+            *result += "]";
+          }
         },
         [result](Sequence s) {
           *result += "[";
@@ -109,6 +120,26 @@ class Reflection {
             auto entry_info = reflect(entry);
 
             append(entry_info, result);
+            *result += ", ";
+          });
+          if ((*result)[result->size() - 2] == ',') {
+            result->replace(result->size() - 2, 2, "]");
+          } else {
+            *result += "]";
+          }
+        },
+        [result](Map m) {
+          *result += "[";
+
+          m.for_each([result](Var key, Var value) {
+            auto key_info = reflect(key);
+            append(key_info, result);
+
+            *result += ": ";
+
+            auto value_info = reflect(value);
+            append(value_info, result);
+
             *result += ", ";
           });
           if ((*result)[result->size() - 2] == ',') {

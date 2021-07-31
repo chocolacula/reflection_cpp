@@ -1,60 +1,60 @@
 #pragma once
 
-#include <vector>
+#include <deque>
 
 #include "../isequence.h"
 
 namespace rr::strategy {
 
 template <typename T>
-struct Vector : public ISequence {
+struct Deque : public ISequence {
 
-  explicit Vector(std::vector<T>* vector)
-      : _vector(vector),  //
-        _type(TypeId::get(vector)) {
+  explicit Deque(std::deque<T>* deque)
+      : _deque(deque),  //
+        _type(TypeId::get(deque)) {
   }
 
   Var var() override {
-    return Var(_vector, _type);
+    return Var(_deque, _type);
   }
 
   Expected<Var> first() override {
-    return Var(&_vector->front());
+    return Var(&_deque->front());
   };
 
   Expected<Var> last() override {
-    return Var(&_vector->back());
+    return Var(&_deque->back());
   };
 
   void for_each(std::function<void(Var)> callback) override {
-    for (auto&& entry : *_vector) {
+    for (auto&& entry : *_deque) {
       callback(Var(&entry));
     }
   }
 
   void clear() override {
-    _vector->clear();
+    _deque->clear();
   }
 
   size_t size() override {
-    return _vector->size();
+    return _deque->size();
   }
 
   Expected<None> push(Var element) override {
 
-    _vector->push_back(*static_cast<T*>(element.raw()));
+    _deque->push_back(*static_cast<T*>(element.raw()));
     return None();
   }
 
   Expected<None> pop() override {
 
-    _vector->pop_back();
+    _deque->pop_back();
     return None();
   }
 
  private:
-  std::vector<T>* _vector;
+  std::deque<T>* _deque;
   TypeId _type;
 };
 
-}  // namespace rr
+}  // namespace rr::strategy
