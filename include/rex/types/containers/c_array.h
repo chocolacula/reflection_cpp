@@ -9,7 +9,7 @@ template <typename T, size_t size_v>
 struct TypeHelper<T[size_v]> {
 
   static TypeInfo reflect(void* value, bool is_const) {
-    return TypeInfo(Array(static_cast<T(*)[size_v]>(value)));
+    return TypeInfo(Array(static_cast<T(*)[size_v]>(value), is_const));
   }
 
   static std::string_view type_name() {
@@ -30,8 +30,8 @@ struct TypeHelper<T[size_v]> {
     delete[] static_cast<T*>(pointer);
   }
 
-  static void copy(void* from, void* to) {
-    std::memcpy(static_cast<T*>(from), static_cast<T*>(to), size_v);
+  static void copy(void* to, const void* from) {
+    std::memcpy(static_cast<T*>(to), static_cast<const T*>(from), size_v);
   }
 
   static bool copy_default(void* to, size_t size) {

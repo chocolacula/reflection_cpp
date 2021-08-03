@@ -1,105 +1,74 @@
 #pragma once
 
-#include <vector>
-
-#include "rex/reflection/type_actions.h"
-#include "rex/type_info/variants/array/array.h"
-#include "strategies/deque.h"
-#include "strategies/list.h"
-#include "strategies/queue.h"
-#include "strategies/stack.h"
-#include "strategies/vector.h"
+#include "list/list.h"
+#include "queue/queue.h"
+#include "set/set.h"
+#include "stack/stack.h"
+#include "vector/vector.h"
 
 namespace rr {
 
-struct Sequence : public ISequence {
+#define BASE Variant<Vector, Stack, Queue, List, Set>
 
+struct Sequence : public BASE, public ISequence {
   Sequence() = delete;
 
-  template <template <typename T1> typename ContainerT, typename T>
-  explicit Sequence(ContainerT<T>* container)  //
-      : _sequence(choose_strategy(container)), _nested_type(TypeId::get<T>()) {
+  template <typename T>
+  Sequence(std::vector<T>* vector, bool is_const)  //
+      : BASE(Vector(vector, is_const)) {
   }
 
-  Var var() override {
-    return _sequence->var();
+  template <typename T>
+  Sequence(std::list<T>* list, bool is_const)  //
+      : BASE(List(list, is_const)) {
   }
 
-  Expected<Var> first() override {
-    if (_sequence->size() == 0) {
-      return Error("The sequence is empty");
-    }
+  template <typename T>
+  Sequence(std::deque<T>* deque, bool is_const)  //
+      : BASE(List(deque, is_const)) {
+  }
 
-    return _sequence->first();
-  };
+  template <typename T>
+  Sequence(std::stack<T>* stack, bool is_const)  //
+      : BASE(Stack(stack, is_const)) {
+  }
 
-  Expected<Var> last() override {
-    if (_sequence->size() == 0) {
-      return Error("The sequence is empty");
-    }
+  template <typename T>
+  Sequence(std::queue<T>* queue, bool is_const)  //
+      : BASE(Queue(queue, is_const)) {
+  }
 
-    return _sequence->last();
-  };
+  template <typename T>
+  Sequence(std::set<T>* set, bool is_const)  //
+      : BASE(Set(set, is_const)) {
+  }
 
-  void for_each(std::function<void(Var)> callback) override {
-    _sequence->for_each(callback);
+  template <typename T>
+  Sequence(std::unordered_set<T>* set, bool is_const)  //
+      : BASE(Set(set, is_const)) {
+  }
+
+  Var own_var() const override {
+    return match([](auto&& s) -> Var { return s.own_var(); });
+  }
+
+  void for_each(std::function<void(Var)> callback) const override {
+    match([&](auto&& s) { s.for_each(callback); });
   }
 
   void clear() override {
-    _sequence->clear();
+    match([](auto&& s) { s.clear(); });
   }
 
   size_t size() override {
-    return _sequence->size();
+    return match([](auto&& s) -> size_t { return s.size(); });
   }
 
-  Expected<None> push(Var element) override {
-    if (_nested_type != element.type()) {
-      return Error(fmt::format("Trying to push value({}) to sequence<{}>",  //
-                               TypeActions::type_name(element.type()),      //
-                               TypeActions::type_name(_nested_type)));
-    }
-
-    return _sequence->push(element);
-  }
-
-  Expected<None> pop() override {
-
-    if (_sequence->size() == 0) {
-      return Error("The sequence is empty");
-    }
-
-    return _sequence->pop();
-  }
-
- private:
-  std::shared_ptr<ISequence> _sequence;
-  TypeId _nested_type;
-
-  template <typename T>
-  std::shared_ptr<ISequence> choose_strategy(std::vector<T>* vector) {
-    return std::make_shared<strategy::Vector<T>>(vector);
-  }
-
-  template <typename T>
-  std::shared_ptr<ISequence> choose_strategy(std::list<T>* list) {
-    return std::make_shared<strategy::List<T>>(list);
-  }
-
-  template <typename T>
-  std::shared_ptr<ISequence> choose_strategy(std::stack<T>* stack) {
-    return std::make_shared<strategy::Stack<T>>(stack);
-  }
-
-  template <typename T>
-  std::shared_ptr<ISequence> choose_strategy(std::queue<T>* queue) {
-    return std::make_shared<strategy::Queue<T>>(queue);
-  }
-
-  template <typename T>
-  std::shared_ptr<ISequence> choose_strategy(std::deque<T>* deque) {
-    return std::make_shared<strategy::Deque<T>>(deque);
+  Expected<None> push(Var value) override {
+    return match([&](auto&& s) -> Expected<None> { return s.push(value); });
   }
 };
+
+#undef BASE
 
 }  // namespace rr

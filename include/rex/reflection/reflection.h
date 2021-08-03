@@ -8,15 +8,18 @@ namespace rr {
 class Reflection {
  public:
   static TypeInfo reflect(Var variable) {
-    return TheGreatTable::data()[variable.type().number()].reflect(variable.raw(), variable.is_const());
+    return TheGreatTable::data()[variable.type().number()].reflect(const_cast<void*>(variable.raw()),
+                                                                   variable.is_const());
   }
 
   template <typename T>
   static TypeInfo reflect(T* pointer) {
-    auto id = TypeId::get(pointer);
-    Var var(pointer, id);
+    return reflect(Var(pointer));
+  }
 
-    return reflect(var);
+  template <typename T>
+  static TypeInfo reflect(const T* pointer) {
+    return reflect(Var(pointer));
   }
 
   static void print(TypeInfo info) {
@@ -49,11 +52,11 @@ class Reflection {
   }
 
   static void call_delete(Var variable) {
-    TheGreatTable::data()[variable.type().number()].call_delete(variable.raw());
+    TheGreatTable::data()[variable.type().number()].call_delete(variable.raw_mut());
   }
 
-  static void copy(Var from, Var to) {
-    TheGreatTable::data()[from.type().number()].copy(from.raw(), to.raw());
+  static void copy(Var to, Var from) {
+    TheGreatTable::data()[from.type().number()].copy(to.raw_mut(), from.raw());
   }
 
   static bool copy_default(TypeId id, void* to, size_t size) {
@@ -61,9 +64,9 @@ class Reflection {
   }
 
  private:
-  static void append(TypeInfo info, std::string* result) {
+  static void append(const TypeInfo& info, std::string* result) {
     info.match(
-        [result](Object o) {
+        [result](const Object& o) {
           for (auto&& record : o.get_all_fields()) {
             // add the field name and trailing whitespace
             *result += record.first;
@@ -74,7 +77,7 @@ class Reflection {
             *result += '\n';
           }
         },
-        [result](Primitive p) {
+        [result](const Primitive& p) {
           p.match([result](Cell<bool> v) { *result += *v.ptr() ? "true" : "false"; },   //
                   [result](Cell<float> v) { *result += std::to_string(*v.ptr()); },     //
                   [result](Cell<double> v) { *result += std::to_string(*v.ptr()); },    //
@@ -98,7 +101,7 @@ class Reflection {
                   },
                   [](auto&&) {});
         },
-        [result](Array a) {
+        [result](const Array& a) {
           *result += "[";
 
           a.for_each([result](Var entry) {
@@ -113,7 +116,7 @@ class Reflection {
             *result += "]";
           }
         },
-        [result](Sequence s) {
+        [result](const Sequence& s) {
           *result += "[";
 
           s.for_each([result](Var entry) {
@@ -128,7 +131,7 @@ class Reflection {
             *result += "]";
           }
         },
-        [result](Map m) {
+        [result](const Map& m) {
           *result += "[";
 
           m.for_each([result](Var key, Var value) {

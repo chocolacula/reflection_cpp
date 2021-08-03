@@ -23,7 +23,7 @@ struct UnknownTypeHelper {
     throw std::runtime_error("Cannot delete a value for unknown type");
   }
 
-  static void copy(void* from, void* to) {
+  static void copy(void* to, const void* from) {
     throw std::runtime_error("Cannot copy values for unknown type");
   }
 

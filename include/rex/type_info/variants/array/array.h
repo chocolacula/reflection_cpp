@@ -9,18 +9,17 @@
 namespace rr {
 
 struct Array final : public IArray {
-
   Array() = delete;
 
   template <typename T, size_t size_v>
-  explicit Array(T (*array)[size_v]) : _array(std::make_shared<CArray<T, size_v>>(array)) {
+  Array(T (*array)[size_v], bool is_const) : _array(std::make_shared<CArray<T, size_v>>(array, is_const)) {
   }
 
   template <typename T, size_t size_v>
-  explicit Array(std::array<T, size_v>* array) : _array(std::make_shared<StdArray<T, size_v>>(array)) {
+  Array(std::array<T, size_v>* array, bool is_const) : _array(std::make_shared<StdArray<T, size_v>>(array, is_const)) {
   }
 
-  Var own_var() override {
+  Var own_var() const override {
     return _array->own_var();
   }
 
@@ -32,16 +31,20 @@ struct Array final : public IArray {
     return _array->operator[](idx);
   }
 
-  Expected<Var> first() override {
-    return _array->first();
+  Expected<Var> front() override {
+    return _array->front();
   };
 
-  Expected<Var> last() override {
-    return _array->last();
+  Expected<Var> back() override {
+    return _array->back();
   };
 
   Expected<None> fill(Var filler) override {
     return _array->fill(filler);
+  }
+
+  void for_each(std::function<void(Var)> callback) const override {
+    _array->for_each(callback);
   }
 
   void for_each(std::function<void(Var)> callback) override {

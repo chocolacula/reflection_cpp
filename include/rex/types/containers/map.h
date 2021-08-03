@@ -11,7 +11,7 @@ template <typename KeyT, typename ValueT>
 struct TypeHelper<std::map<KeyT, ValueT>> {
 
   static TypeInfo reflect(void* value, bool is_const) {
-    return TypeInfo(Map(static_cast<std::map<KeyT, ValueT>*>(value)));
+    return TypeInfo(Map(static_cast<std::map<KeyT, ValueT>*>(value), is_const));
   }
 
   static std::string_view type_name() {
@@ -32,8 +32,8 @@ struct TypeHelper<std::map<KeyT, ValueT>> {
     delete static_cast<std::map<KeyT, ValueT>*>(pointer);
   }
 
-  static void copy(void* from, void* to) {
-    *static_cast<std::map<KeyT, ValueT>*>(from) = *static_cast<std::map<KeyT, ValueT>*>(to);
+  static void copy(void* to, const void* from) {
+    *static_cast<std::map<KeyT, ValueT>*>(to) = *static_cast<const std::map<KeyT, ValueT>*>(from);
   }
 
   static bool copy_default(void* to, size_t size) {

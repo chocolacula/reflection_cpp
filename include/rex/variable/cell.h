@@ -7,13 +7,16 @@ namespace rr {
 template <typename T>
 struct Cell {
 
-  Cell(T* value) : _value(value), _is_const(false) {
+  explicit Cell(T* value) : _value(value), _is_const(false) {
+  }
+
+  explicit Cell(const T* value) : _value(const_cast<T*>(value)), _is_const(true) {
   }
 
   Cell(T* value, bool is_const) : _value(value), _is_const(is_const) {
   }
 
-  Cell(const T* value) : _value(const_cast<T*>(value)), _is_const(true) {
+  explicit Cell(const Var& var) : _value(const_cast<T*>(var.raw())), _is_const(var.is_const()) {
   }
 
   bool is_const() const {
@@ -32,7 +35,7 @@ struct Cell {
     return _value;
   }
 
- protected:
+ private:
   T* _value;
   bool _is_const;
 };

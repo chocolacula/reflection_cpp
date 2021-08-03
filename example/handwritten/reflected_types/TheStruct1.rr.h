@@ -37,8 +37,8 @@ struct TypeHelper<TheStruct1> {
     delete static_cast<TheStruct1*>(pointer);
   }
 
-  static void copy(void* from, void* to) {
-    *static_cast<TheStruct1*>(from) = *static_cast<TheStruct1*>(to);
+  static void copy(void* to, const void* from) {
+    *static_cast<TheStruct1*>(to) = *static_cast<const TheStruct1*>(to);
   }
 
   static bool copy_default(void* to, size_t size) {

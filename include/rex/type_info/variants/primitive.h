@@ -3,7 +3,7 @@
 #include <functional>
 #include <stdexcept>
 
-#include "../../var/cell.h"
+#include "../../variable/cell.h"
 #include "fmt/format.h"
 #include "rex/error/error.h"
 #include "rex/expected.h"

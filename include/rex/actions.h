@@ -1,7 +1,7 @@
 #pragma once
 
 #include "rex/type_info/type_info.h"
-#include "rex/var/var.h"
+#include "rex/variable/var.h"
 
 namespace rr {
 
@@ -12,7 +12,7 @@ struct Actions {
                     size_t (*size)(),                  //
                     Var (*alloc_default)(),            //
                     void (*call_delete)(void*),        //
-                    void (*copy)(void*, void*),        //
+                    void (*copy)(void*, const void*),  //
                     bool (*copy_default)(void*, size_t))
       : reflect(reflect),
         type_name(get_name),
@@ -33,7 +33,7 @@ struct Actions {
   size_t (*type_size)();
   Var (*alloc_default)();
   void (*call_delete)(void*);
-  void (*copy)(void*, void*);
+  void (*copy)(void*, const void*);
   bool (*copy_default)(void*, size_t);
 };
 

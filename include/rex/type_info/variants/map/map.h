@@ -7,17 +7,24 @@
 namespace rr {
 
 struct Map final : public IMap {
+  Map() = delete;
 
   template <typename KeyT, typename ValueT>
-  Map(std::map<KeyT, ValueT>* map) : _map(std::make_shared<StdMap<KeyT, ValueT>>(map)) {
+  Map(std::map<KeyT, ValueT>* map, bool is_const)  //
+      : _map(std::make_shared<StdMap<KeyT, ValueT>>(map, is_const)) {
   }
 
   template <typename KeyT, typename ValueT>
-  Map(std::unordered_map<KeyT, ValueT>* map) : _map(std::make_shared<StdUnorderedMap<KeyT, ValueT>>(map)) {
+  Map(std::unordered_map<KeyT, ValueT>* map, bool is_const)  //
+      : _map(std::make_shared<StdUnorderedMap<KeyT, ValueT>>(map, is_const)) {
   }
 
-  Var own_var() override {
+  Var own_var() const override {
     return _map->own_var();
+  }
+
+  void for_each(std::function<void(Var, Var)> callback) const override {
+    return _map->for_each(callback);
   }
 
   void for_each(std::function<void(Var, Var)> callback) override {

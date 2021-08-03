@@ -10,7 +10,7 @@ namespace rr {
 // declaring a slightly more readable state of nothing
 using None = std::monostate;
 
-template <typename ...T>
+template <typename... T>
 struct Variant {
 
   template <typename SomeT>
@@ -27,16 +27,21 @@ struct Variant {
   }
 
   template <typename... FuncT>
-  decltype(auto) match_move(FuncT... functions) {
-    return std::visit(Overloaded{functions...}, std::move(_content));
+  decltype(auto) match(FuncT... functions) const {
+    return std::visit(Overloaded{functions...}, _content);
   }
 
   template <typename SomeT>
-  SomeT get() {
+  bool is() {
+    return std::holds_alternative<SomeT>(_content);
+  }
+
+  template <typename SomeT>
+  SomeT& get() {
     auto pointer = std::get_if<SomeT>(&_content);
 
     if (pointer == nullptr) {
-      throw std::runtime_error("Requested type doesn't exist in the Primitive");
+      throw std::runtime_error("The instance of requested type doesn't exist");
     }
 
     return *pointer;
@@ -46,4 +51,4 @@ struct Variant {
   std::variant<T...> _content;
 };
 
-} // namespace rr
+}  // namespace rr

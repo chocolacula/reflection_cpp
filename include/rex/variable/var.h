@@ -7,6 +7,9 @@
 
 namespace rr {
 
+/// The abstraction from type and const modifier
+/// all types represented like a pointer + type id + const flag
+/// the same representation for each type
 struct Var {
 
   template <typename T>
@@ -17,7 +20,7 @@ struct Var {
   explicit Var(T* value) : _value(value), _type(TypeId::get(value)), _is_const(false) {
   }
 
-  Var(void* value, TypeId type) : _value(value), _type(type) {
+  Var(void* value, TypeId type, bool is_const) : _value(value), _type(type), _is_const(is_const) {
   }
 
   bool operator==(const Var& other) const {
@@ -28,17 +31,29 @@ struct Var {
     return _type != other._type || _value != other._value;
   }
 
-  void* raw() const {
+  bool is_const() const {
+    return _is_const;
+  }
+
+  void* raw_mut() const {
+    if (_is_const) {
+      return nullptr;
+    }
+
     return _value;
   }
 
-  bool is_const() const {
-    return _is_const;
+  const void* raw() const {
+    return _value;
   }
 
   /// runtime type check and cast
   template <typename T>
   Expected<T*> rt_cast() const {
+
+    if (std::is_const_v<T> == false && _is_const) {
+      return Error("The type under Var has const qualifier, cannot cast to mutable");
+    }
 
     auto desired_type = TypeId::get<T>();
 
@@ -55,10 +70,10 @@ struct Var {
     return _type;
   }
 
- protected:
+ private:
   void* _value;
   TypeId _type;
   bool _is_const;
 };
 
-}
+}  // namespace rr

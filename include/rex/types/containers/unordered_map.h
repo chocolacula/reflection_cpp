@@ -11,7 +11,7 @@ template <typename KeyT, typename ValueT>
 struct TypeHelper<std::unordered_map<KeyT, ValueT>> {
 
   static TypeInfo reflect(void* value, bool is_const) {
-    return TypeInfo(Map(static_cast<std::unordered_map<KeyT, ValueT>*>(value)));
+    return TypeInfo(Map(static_cast<std::unordered_map<KeyT, ValueT>*>(value), is_const));
   }
 
   static std::string_view type_name() {
@@ -33,8 +33,8 @@ struct TypeHelper<std::unordered_map<KeyT, ValueT>> {
     delete static_cast<std::unordered_map<KeyT, ValueT>*>(pointer);
   }
 
-  static void copy(void* from, void* to) {
-    *static_cast<std::unordered_map<KeyT, ValueT>*>(from) = *static_cast<std::unordered_map<KeyT, ValueT>*>(to);
+  static void copy(void* to, const void* from) {
+    *static_cast<std::unordered_map<KeyT, ValueT>*>(to) = *static_cast<const std::unordered_map<KeyT, ValueT>*>(from);
   }
 
   static bool copy_default(void* to, size_t size) {

@@ -8,17 +8,28 @@ namespace rr {
 
 template <typename KeyT, typename ValueT>
 struct StdMap final : public IMap {
+  StdMap() = delete;
 
-  StdMap(std::map<KeyT, ValueT>* map) : _map(map) {
+  StdMap(std::map<KeyT, ValueT>* map, bool is_const) : _map(map), _is_const(is_const) {
   }
 
-  Var own_var() override {
-    return Var(_map);
+  Var own_var() const override {
+    return Var(_map, TypeId::get(_map), _is_const);
+  }
+
+  void for_each(std::function<void(Var, Var)> callback) const override {
+    auto value_type = TypeId::get<ValueT>();
+
+    for (auto&& pair : *_map) {
+      callback(Var(&pair.first), Var(&pair.second, value_type, true));
+    }
   }
 
   void for_each(std::function<void(Var, Var)> callback) override {
+    auto value_type = TypeId::get<ValueT>();
+
     for (auto&& pair : *_map) {
-      callback(Var(&pair.first), Var(&pair.second));
+      callback(Var(&pair.first), Var(&pair.second, value_type, _is_const));
     }
   }
 
@@ -71,6 +82,7 @@ struct StdMap final : public IMap {
 
  private:
   std::map<KeyT, ValueT>* _map;
+  bool _is_const;
 };
 
 }  // namespace rr

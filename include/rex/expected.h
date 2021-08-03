@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdexcept>
-
 #include <variant>
 
 #include "rex/error/error.h"
@@ -26,9 +25,8 @@ struct Expected : public BASE {
   Expected(Error&& error) : BASE(std::move(error)) {  // NOLINT implicit constructor
   }
 
-  Expected(const Expected& other) noexcept
-    : BASE::_content(other._content)
-  {}
+  Expected(const Expected& other) noexcept : BASE::_content(other._content) {
+  }
 
   Expected& operator=(const Expected& other) {
     if (this == &other) {
@@ -40,9 +38,8 @@ struct Expected : public BASE {
     return *this;
   }
 
-  Expected(Expected&& other) noexcept
-    : BASE::_content(std::move(other._content))
-  {}
+  Expected(Expected&& other) noexcept : BASE::_content(std::move(other._content)) {
+  }
 
   Expected& operator=(Expected&& other) noexcept {
     if (this == &other) {
@@ -55,7 +52,7 @@ struct Expected : public BASE {
   }
 
   bool is_error() {
-    return std::get_if<Error>(&(BASE::_content)) != nullptr;
+    return BASE::template is<Error>();
   }
 
   T unwrap() {

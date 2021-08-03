@@ -1,11 +1,11 @@
 #pragma once
 
-#include <utility>
 #include <unordered_map>
+#include <utility>
 
-#include "rex/var/var.h"
-#include "rex/expected.h"
 #include "fmt/format.h"
+#include "rex/expected.h"
+#include "rex/variable/var.h"
 
 namespace rr {
 
@@ -27,18 +27,19 @@ struct Object {
     return Error(fmt::format("There is no field with name: {}", name));
   }
 
-  const std::unordered_map<std::string, Var>& get_all_fields() {
+  const std::unordered_map<std::string, Var>& get_all_fields() const {
 
     return _fields;
   }
 
-  Var var() {
+  Var own_var() {
     return _var;
   }
 
  private:
+  // TODO move it under shared_ptr
   std::unordered_map<std::string, Var> _fields;
   Var _var;
 };
 
-} // namespace rr
+}  // namespace rr

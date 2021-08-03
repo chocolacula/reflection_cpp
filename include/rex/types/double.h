@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../the_great_table.h"
-#include "../var/cell.h"
+#include "../variable/cell.h"
 #include "helper.h"
 
 namespace rr {
@@ -30,8 +30,8 @@ struct TypeHelper<double> {
     delete static_cast<double*>(pointer);
   }
 
-  static void copy(void* from, void* to) {
-    *static_cast<double*>(from) = *static_cast<double*>(to);
+  static void copy(void* to, const void* from) {
+    *static_cast<double*>(to) = *static_cast<const double*>(from);
   }
 
   static bool copy_default(void* to, size_t size) {

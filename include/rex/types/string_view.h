@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../the_great_table.h"
-#include "../var/cell.h"
+#include "../variable/cell.h"
 #include "helper.h"
 
 namespace rr {
@@ -30,8 +30,8 @@ struct TypeHelper<std::string_view> {
     delete static_cast<std::string_view*>(pointer);
   }
 
-  static void copy(void* from, void* to) {
-    *static_cast<std::string_view*>(from) = *static_cast<std::string_view*>(to);
+  static void copy(void* to, const void* from) {
+    *static_cast<std::string_view*>(to) = *static_cast<const std::string_view*>(from);
   }
 
   static bool copy_default(void* to, size_t size) {

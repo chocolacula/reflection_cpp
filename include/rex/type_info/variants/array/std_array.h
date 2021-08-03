@@ -8,33 +8,52 @@ namespace rr {
 
 template <typename T, size_t size_v>
 struct StdArray final : public IArray {
+  StdArray() = delete;
 
-  explicit StdArray(std::array<T, size_v>* array) : _array(array) {
+  StdArray(std::array<T, size_v>* array, bool is_const) : _array(array), _is_const(is_const) {
   }
 
-  Var own_var() override {
-    return Var(_array);
+  Var own_var() const override {
+    return Var(_array, TypeId::get(_array), _is_const);
   }
+
+  void for_each(std::function<void(Var)> callback) const override {
+    auto nested_type = TypeId::get<T>();
+
+    for (auto i = 0; i < size_v; ++i) {
+      callback(Var(&_array[i], nested_type, true));
+    }
+  }
+
+  void for_each(std::function<void(Var)> callback) override {
+    for (auto i = 0; i < size_v; ++i) {
+      callback(Var(&(*_array)[i]));
+    }
+  }
+
+  size_t size() override {
+    return size_v;
+  }
+
+  Expected<Var> front() override {
+    return Var(&(*_array)[0], TypeId::get<T>(), _is_const);
+  };
+
+  Expected<Var> back() override {
+    return Var(&(*_array)[size_v - 1], TypeId::get<T>(), _is_const);
+  };
 
   Expected<Var> at(size_t idx) override {
     if (idx >= size_v) {
       return Error(fmt::format("Index: {} is out of array's size: {}", idx, size_v));
     }
 
-    return Var(&_array[idx]);
+    return Var(&(*_array)[idx], TypeId::get<T>(), _is_const);
   }
 
   Expected<Var> operator[](size_t idx) override {
     return at(idx);
   }
-
-  Expected<Var> first() override {
-    return Var(_array);
-  };
-
-  Expected<Var> last() override {
-    return Var(&_array[size_v - 1]);
-  };
 
   Expected<None> fill(Var filler) override {
     auto f = filler.rt_cast<T>();
@@ -49,18 +68,9 @@ struct StdArray final : public IArray {
         });
   }
 
-  void for_each(std::function<void(Var)> callback) override {
-    for (auto i = 0; i < size_v; ++i) {
-      callback(Var(&(*_array)[i]));
-    }
-  }
-
-  size_t size() override {
-    return size_v;
-  }
-
  private:
   std::array<T, size_v>* _array;
+  bool _is_const;
 };
 
 }  // namespace rr

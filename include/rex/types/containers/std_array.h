@@ -11,7 +11,7 @@ template <typename T, size_t size_v>
 struct TypeHelper<std::array<T, size_v>> {
 
   static TypeInfo reflect(void* value, bool is_const) {
-    return TypeInfo(Array(static_cast<std::array<T, size_v>*>(value)));
+    return TypeInfo(Array(static_cast<std::array<T, size_v>*>(value), is_const));
   }
 
   static std::string_view type_name() {
@@ -32,9 +32,9 @@ struct TypeHelper<std::array<T, size_v>> {
     delete static_cast<std::array<T, size_v>*>(pointer);
   }
 
-  static void copy(void* from, void* to) {
-    std::memcpy(static_cast<std::array<T, size_v>*>(from)->data(),  //
-                static_cast<std::array<T, size_v>*>(to)->data(),    //
+  static void copy(void* to, const void* from) {
+    std::memcpy(static_cast<std::array<T, size_v>*>(to)->data(),          //
+                static_cast<const std::array<T, size_v>*>(from)->data(),  //
                 size_v);
   }
 

@@ -12,7 +12,27 @@ class TypeActions {
   friend class Primitive;
   friend class Sequence;
   friend class Var;
-  friend class ConstVar;
+
+  template <typename T>
+  friend class StdVector;
+
+  template <typename T>
+  friend class StdList;
+
+  template <typename T>
+  friend class StdDeque;
+
+  template <typename T>
+  friend class StdQueue;
+
+  template <typename T>
+  friend class StdStack;
+
+  template <typename T>
+  friend class StdSet;
+
+  template <typename T>
+  friend class StdUnorderedSet;
 };
 
 }  // namespace rr

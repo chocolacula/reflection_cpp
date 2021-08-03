@@ -11,7 +11,7 @@ template <typename T>
 struct TypeHelper<std::set<T>> {
 
   static TypeInfo reflect(void* value, bool is_const) {
-    return TypeInfo(Sequence(static_cast<std::set<T>*>(value)));
+    return TypeInfo(Sequence(static_cast<std::set<T>*>(value), is_const));
   }
 
   static std::string_view type_name() {
@@ -32,8 +32,8 @@ struct TypeHelper<std::set<T>> {
     delete static_cast<std::set<T>*>(pointer);
   }
 
-  static void copy(void* from, void* to) {
-    *static_cast<std::set<T>*>(from) = *static_cast<std::set<T>*>(to);
+  static void copy(void* to, const void* from) {
+    *static_cast<std::set<T>*>(to) = *static_cast<const std::set<T>*>(from);
   }
 
   static bool copy_default(void* to, size_t size) {

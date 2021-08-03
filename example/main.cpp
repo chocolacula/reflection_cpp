@@ -35,19 +35,14 @@ int main() {
   // An Error object with message will be returned
   expected_enum.match(  //
       [](Colors /*constant*/) { fmt::print("Got an enum constant\n"); },
-      [](Error err) { fmt::print("Copy Error object and print message: {}\n", err.what()); });
-
-  // Move version also available
-  expected_enum.match_move(  //
-      [](Colors /*constant*/) { fmt::print("Got a constant\n"); },
-      [](Error err) { fmt::print("Move Error object and print message: {}\n", err.what()); });
+      [](Error err) { fmt::print("Got an error message: {}\n", err.what()); });
 
   std::cout << "\n";
 
   // It works for old plain enum type but in this case there is no any generated code for TheEnum
   EnumInfo<Animals>::to_string(Animals::kGiraffe)
       .match([](std::string_view str) { fmt::print("{}\n", str); },
-             [](Error err) { fmt::print("Cannot translate an enum to string, error: {}\n", err.what()); });
+             [](Error err) { fmt::print("Cannot convert an enum to string, error: {}\n", err.what()); });
 
   std::cout << "\n";
 
@@ -55,48 +50,41 @@ int main() {
   //
   //
   TheStruct1 s;
-
-  auto info = Reflection::reflect(&s);
+  auto s1_info = Reflection::reflect(&s);
 
   std::cout << Reflection::type_name(TypeId::get(&s.error_codes)) << "\n";
-  Reflection::print(info);
+  Reflection::print(s1_info);
 
   auto field_info = Reflection::reflect(&s.error_codes);
 
   field_info.match(
-      [](Sequence s) {
-        bool done = false;
-        s.for_each([&done](Var entry) {
-          auto sub_seq_info = Reflection::reflect(entry);
+      [](Sequence& s) {
+        auto is_v = s.is<Vector>();
+        auto& v = s.get<Vector>();
 
-          if (!done) {
-            sub_seq_info.match(
-                [](Sequence s) {
+        Reflection::reflect(v[1].unwrap())
+            .match(
+                [](Sequence& s) {
                   s.clear();
-                  s.var().rt_cast<std::vector<int>>().unwrap()->clear();
 
-                  {
-                    int v = 1;
-                    s.push(Var(&v));
-                  }
+                  // {
+                  //   int v = 1;
+                  //   s.push(Var(&v));
+                  // }
                   {
                     int v = 2;
                     s.push(Var(&v));
                   }
-                  {
-                    int v = 3;
-                    s.push(Var(&v));
-                  }
+                  // {
+                  //   int v = 3;
+                  //   s.push(Var(&v));
+                  // }
                 },
                 [](auto&&) {});
-          }
-
-          done = true;
-        });
       },
       [](auto&&) {});
 
-  Reflection::print(info);
+  Reflection::print(s1_info);
 
   int arr[6] = {11, 12, 13};
   Reflection::print(&arr);
