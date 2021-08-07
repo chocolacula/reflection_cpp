@@ -20,7 +20,7 @@ link_directories(../RE-flex/lib)
 
 set(SOURCES
         parsing/lexers/compiled/cpp_source.yy.cpp
-        main.cpp ../include/rex/types/all_types.h ../include/rex/reflection/printer.h)
+        main.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 

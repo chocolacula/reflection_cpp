@@ -2,7 +2,7 @@
 
 #include <map>
 
-#include "rex/the_great_table.h"
+#include "rex/reflection/the_great_table.h"
 #include "rex/types/helper.h"
 
 namespace rr {
@@ -15,7 +15,7 @@ struct TypeHelper<std::map<KeyT, ValueT>> {
   }
 
   static std::string_view type_name() {
-    static auto name = fmt::format("std::map<{}, {}>", TypeHelper<KeyT>::type_name(), TypeHelper<ValueT>::type_name());
+    static auto name = format("std::map<{}, {}>", TypeHelper<KeyT>::type_name(), TypeHelper<ValueT>::type_name());
     return name;
   }
 

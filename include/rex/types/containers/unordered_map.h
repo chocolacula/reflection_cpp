@@ -2,7 +2,7 @@
 
 #include <unordered_map>
 
-#include "rex/the_great_table.h"
+#include "rex/reflection/the_great_table.h"
 #include "rex/types/helper.h"
 
 namespace rr {
@@ -16,7 +16,7 @@ struct TypeHelper<std::unordered_map<KeyT, ValueT>> {
 
   static std::string_view type_name() {
     static auto name =
-        fmt::format("std::unordered_map<{}, {}>", TypeHelper<KeyT>::type_name(), TypeHelper<ValueT>::type_name());
+        format("std::unordered_map<{}, {}>", TypeHelper<KeyT>::type_name(), TypeHelper<ValueT>::type_name());
     return name;
   }
 

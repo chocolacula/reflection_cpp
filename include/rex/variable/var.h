@@ -4,8 +4,13 @@
 
 #include "../expected.h"
 #include "../info/type_id.h"
+#include "../tools.h"
 
 namespace rr {
+
+namespace Reflection {
+std::string_view type_name(TypeId id);
+}
 
 /// The abstraction from type and const modifier
 /// all types represented like a pointer + type id + const flag
@@ -31,10 +36,6 @@ struct Var {
     return _type != other._type || _value != other._value;
   }
 
-  bool is_const() const {
-    return _is_const;
-  }
-
   void* raw_mut() const {
     if (_is_const) {
       return nullptr;
@@ -45,6 +46,14 @@ struct Var {
 
   const void* raw() const {
     return _value;
+  }
+
+  TypeId type() const {
+    return _type;
+  }
+
+  bool is_const() const {
+    return _is_const;
   }
 
   /// runtime type check and cast
@@ -58,16 +67,12 @@ struct Var {
     auto desired_type = TypeId::get<T>();
 
     if (desired_type != _type) {
-      return Error(fmt::format("Cannot cast {} to {}",         //
-                               TypeActions::type_name(_type),  //
-                               TypeActions::type_name(desired_type)));
+      return Error(format("Cannot cast {} to {}",        //
+                          Reflection::type_name(_type),  //
+                          Reflection::type_name(desired_type)));
     }
 
     return static_cast<T*>(_value);
-  }
-
-  TypeId type() const {
-    return _type;
   }
 
  private:

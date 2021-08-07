@@ -16,8 +16,8 @@ struct Cell {
   Cell(T* value, bool is_const) : _value(value), _is_const(is_const) {
   }
 
-  explicit Cell(const Var& var) : _value(const_cast<T*>(var.raw())), _is_const(var.is_const()) {
-  }
+  // explicit Cell(const Var& var) : _value(const_cast<T*>(var.raw())), _is_const(var.is_const()) {
+  // }
 
   bool is_const() const {
     return _is_const;
@@ -35,9 +35,15 @@ struct Cell {
     return _value;
   }
 
+  // Var var() {
+  //   return Var(_value, TypeId::get<T>(), _is_const);
+  // }
+
  private:
   T* _value;
   bool _is_const;
+
+  friend class Var;
 };
 
 }  // namespace rr

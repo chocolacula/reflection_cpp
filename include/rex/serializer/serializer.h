@@ -6,11 +6,10 @@
 
 namespace rr {
 
-class Serializer {
+class Native {
  public:
-  virtual void to_field(const char* name, FieldInfo info) = 0;
-
-  virtual void from_field(const char* name, FieldInfo info) = 0;
+  virtual void serialize(const FieldInfo& info) = 0;
+  virtual void deserialize(FieldInfo* info) = 0;
 };
 
 }  // namespace rr

@@ -2,7 +2,7 @@
 
 #include <deque>
 
-#include "rex/the_great_table.h"
+#include "rex/reflection/the_great_table.h"
 #include "rex/types/helper.h"
 
 namespace rr {
@@ -15,7 +15,7 @@ struct TypeHelper<std::deque<T>> {
   }
 
   static std::string_view type_name() {
-    static auto name = fmt::format("std::deque<{}>", TypeHelper<T>::type_name());
+    static auto name = format("std::deque<{}>", TypeHelper<T>::type_name());
     return name;
   }
 

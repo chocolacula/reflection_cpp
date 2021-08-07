@@ -54,7 +54,7 @@ class ConstexprMap {
     auto ptr = search_by_name(name, 0, size);
 
     if (ptr == nullptr) {
-      return Error(fmt::format("Cannot find the constant '{}'", name));
+      return Error(format("Cannot find the constant '{}'", name));
     }
 
     return ptr->value;

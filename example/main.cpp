@@ -1,12 +1,11 @@
 #include <iostream>
 
 #include "handwritten/reflection.h"
-#include "objects.h"
+#include "rex/serializer/native.h"
 
 using namespace rr;
 
 int main() {
-
   // You can get an Enum constant string representation
   auto expected_string = EnumInfo<Colors>::to_string(Colors::kWhite);
 
@@ -46,60 +45,70 @@ int main() {
 
   std::cout << "\n";
 
-  //
-  //
-  //
-  TheStruct1 s;
-  auto s1_info = Reflection::reflect(&s);
+  /*
+    // And of course you can use structs and classes via TypeInfo if they are standard_layout data types
+    TheStruct1 struct1;
 
-  std::cout << Reflection::type_name(TypeId::get(&s.error_codes)) << "\n";
-  Reflection::print(s1_info);
+    // TypeInfo may be used in runtime by TypeId and global function
+    // or in compile time template class like TypeInfo<TheStruct1>::get_field
+    auto expected_value = type_info(TypeId::get<TheStruct1>()).get_field("server_port").unwrap().unwrap(&struct1);
 
-  auto field_info = Reflection::reflect(&s.error_codes);
+    // ExpectedValue doesn't contain an Error because FieldInfo guarantees that it doesn't contain invalid value
+    // but nobody knows which type is it, to figure out it use type matching
+    expected_value.match([](int v) { std::cout << "This is int! " << v << std::endl; },
+                         [](auto&& v) { std::cout << "This is not int!" << std::endl; });
 
-  field_info.match(
-      [](Sequence& s) {
-        auto is_v = s.is<Vector>();
-        auto& v = s.get<Vector>();
+    // ExpectedValue will return string_view even the field has string type
+    expected_value = TypeInfo<TheStruct1>::get_field("host").unwrap().get(&struct1);
 
-        Reflection::reflect(v[1].unwrap())
-            .match(
-                [](Sequence& s) {
-                  s.clear();
+    expected_value.match([](std::string_view v) { std::cout << "This is string_view! \"" << v << "\"" << std::endl; },
+                         [](auto&& v) { std::cout << "This is not string!" << std::endl; });
 
-                  // {
-                  //   int v = 1;
-                  //   s.push(Var(&v));
-                  // }
-                  {
-                    int v = 2;
-                    s.push(Var(&v));
-                  }
-                  // {
-                  //   int v = 3;
-                  //   s.push(Var(&v));
-                  // }
-                },
-                [](auto&&) {});
-      },
-      [](auto&&) {});
+    std::cout << std::endl;
 
-  Reflection::print(s1_info);
+    // Setting a value also possible with runtime but fast type checking
+    auto ok = TypeInfo<TheStruct1>::get_field("server_port").unwrap().set(&struct1, 9000);
 
-  int arr[6] = {11, 12, 13};
-  Reflection::print(&arr);
-  std::cout << Reflection::type_name(TypeId::get(&arr)) << std::endl;
+    if (ok.is_error()) {
+      std::cout << "An int value didn't set " << std::endl;
+    } else {
+      std::cout << "Set new int value " << std::endl;
+    }
 
-  std::array<int, 4> std_arr = {7, 8};
-  Reflection::print(Reflection::reflect(&std_arr));
-  std::cout << Reflection::type_name(TypeId::get(&std_arr)) << std::endl;
+    ok = TypeInfo<TheStruct1>::get_field("server_port").unwrap().set(&struct1, 9000.2);
 
-  std::unordered_map<int, std::string_view> m = {{1, "1"}, {33, "thirty three"}};
-  std::cout << Reflection::type_name(TypeId::get(&m)) << std::endl;
-  Reflection::print(&m);
+    if (ok.is_error()) {
+      std::cout << "A double value didn't set " << std::endl;
+    } else {
+      std::cout << "Set new double value " << std::endl;
+    }
 
-  TheStruct2 s2;
-  Reflection::print(&s2);
+    std::cout << "\nThe field server_port now is " << struct1.port << "\n" << std::endl;
 
+    // And for sweet one you can serialize to struct and vice vera
+    auto input = nlohmann::json::parse(R"({ "host": "google.com", "server_port": 5000, "timeout": 10 })");
+    SerializerNlohmannJson input_adapter(&input);
+
+    TheStruct1 struct_new;
+
+    TypeInfo<TheStruct1>::deserialize(&struct_new, &input_adapter);
+
+    struct_new.port = 5080;
+
+    nlohmann::json output;
+    SerializerNlohmannJson output_adapter(&output);
+    TypeInfo<TheStruct1>::serialize(&struct_new, &output_adapter);
+
+    std::cout << "struct_new after serialization is:\n" << output << std::endl;
+
+    // Deserialization of structs with private fields possible too
+    // but it must contains ALL private fields to be standard_layout data type
+    TheStruct2 struct2;
+    TypeInfo<TheStruct2>::deserialize(&struct2, &input_adapter);
+
+    std::cout << "\nstruct2 has only private fields:"        //
+              << "\n_host=\"" << struct2.get_host() << "\""  //
+              << "\n_port=" << struct2.get_port() << std::endl;
+  */
   return 0;
 }

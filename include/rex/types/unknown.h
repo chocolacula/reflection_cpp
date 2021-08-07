@@ -1,9 +1,11 @@
 #pragma once
 
+#include "../info/type_info/type_info.h"
+
 namespace rr {
 
 struct UnknownTypeHelper {
-  static TypeInfo reflect(void* value, bool is_const) {
+  static TypeInfo reflect(void* /*value*/, bool /*is_const*/) {
     throw std::runtime_error("Cannot reflect a value with unknown type");
   }
 

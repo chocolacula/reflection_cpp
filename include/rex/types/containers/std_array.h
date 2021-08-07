@@ -2,7 +2,7 @@
 
 #include <array>
 
-#include "rex/the_great_table.h"
+#include "rex/reflection/the_great_table.h"
 #include "rex/types/helper.h"
 
 namespace rr {
@@ -15,7 +15,7 @@ struct TypeHelper<std::array<T, size_v>> {
   }
 
   static std::string_view type_name() {
-    static auto name = fmt::format("std::array<{}, {}>", TypeHelper<T>::type_name(), size_v);
+    static auto name = format("std::array<{}, {}>", TypeHelper<T>::type_name(), size_v);
     return name;
   }
 

@@ -13,8 +13,8 @@ include_directories(../generator/inja/third_party/include)
 include_directories(../fmt/include)
 
 set(SOURCES
-    main.cpp
-    ../fmt/src/format.cc)
+        main.cpp
+        ../fmt/src/format.cc)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 

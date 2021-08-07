@@ -2,7 +2,7 @@
 
 #include <queue>
 
-#include "rex/the_great_table.h"
+#include "rex/reflection/the_great_table.h"
 #include "rex/types/helper.h"
 
 namespace rr {
@@ -15,7 +15,7 @@ struct TypeHelper<std::queue<T>> {
   }
 
   static std::string_view type_name() {
-    static auto name = fmt::format("std::queue<{}>", TypeHelper<T>::type_name());
+    static auto name = format("std::queue<{}>", TypeHelper<T>::type_name());
     return name;
   }
 

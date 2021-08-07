@@ -10,8 +10,8 @@
 #include "rex/expected.h"
 #include "rex/expected/error.h"
 #include "rex/info/field_info.h"
+#include "rex/info/type_info/type_info.h"
 #include "rex/serializer/serializer.h"
-#include "rex/type_info/type_info.h"
 
 // from input parameter
 #include "../../object.h"
