@@ -27,30 +27,15 @@ static void parse(const TypeInfo& info, std::string* result) {
           *result += '\n';
         }
       },
-      [result](const Primitive& p) {
-        p.match([result](Cell<bool> v) { *result += *v.ptr() ? "true" : "false"; },   //
-                [result](Cell<float> v) { *result += std::to_string(*v.ptr()); },     //
-                [result](Cell<double> v) { *result += std::to_string(*v.ptr()); },    //
-                [result](Cell<int8_t> v) { *result += std::to_string(*v.ptr()); },    //
-                [result](Cell<uint8_t> v) { *result += std::to_string(*v.ptr()); },   //
-                [result](Cell<int16_t> v) { *result += std::to_string(*v.ptr()); },   //
-                [result](Cell<uint16_t> v) { *result += std::to_string(*v.ptr()); },  //
-                [result](Cell<int32_t> v) { *result += std::to_string(*v.ptr()); },   //
-                [result](Cell<uint32_t> v) { *result += std::to_string(*v.ptr()); },  //
-                [result](Cell<int64_t> v) { *result += std::to_string(*v.ptr()); },   //
-                [result](Cell<uint64_t> v) { *result += std::to_string(*v.ptr()); },  //
-                [result](Cell<std::string> v) {
-                  *result += "'";
-                  *result += *v.ptr();
-                  *result += "'";
-                },
-                [result](Cell<std::string_view> v) {
-                  *result += "'";
-                  *result += *v.ptr();
-                  *result += "'";
-                },
-                [](auto&&) {});
+      [result](const Bool& b) { *result += b.to_string(); },     //
+      [result](const Integer& i) { *result += i.to_string(); },  //
+      [result](const Float& f) { *result += f.to_string(); },
+      [result](const String& s) {
+        *result += "'";
+        *result += s.get();
+        *result += "'";
       },
+      [result](const Enum& e) { *result += e.to_string(); },
       [result](const Map& m) {
         *result += "[";
 
@@ -106,18 +91,16 @@ std::string sprint(const T* pointer) {
 }
 
 void print(const TypeInfo& info) {
-  std::string result;
-  parse(info, &result);
-  std::cout << result << std::endl;
+  std::cout << sprint(info) << std::endl;
 }
 
 void print(Var var) {
-  sprint(reflect(var));
+  print(reflect(var));
 }
 
 template <typename T>
 void print(const T* pointer) {
-  sprint(reflect(pointer));
+  print(reflect(pointer));
 }
 
 }  // namespace Reflection

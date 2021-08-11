@@ -1,7 +1,5 @@
 #pragma once
 
-#include <fmt/format.h>
-
 #include "../expected.h"
 #include "../info/type_id.h"
 #include "../tools.h"
@@ -22,7 +20,7 @@ struct Var {
   }
 
   template <typename T>
-  explicit Var(T* value) : _value(value), _type(TypeId::get(value)), _is_const(false) {
+  explicit Var(T* value, bool is_const = false) : _value(value), _type(TypeId::get(value)), _is_const(is_const) {
   }
 
   Var(void* value, TypeId type, bool is_const) : _value(value), _type(type), _is_const(is_const) {

@@ -61,7 +61,6 @@ struct Expected : public BASE {
     if (pointer == nullptr) {
       throw std::runtime_error(std::get<Error>(BASE::_content).what().data());
     }
-
     return *pointer;
   }
 };

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "rex/reflection/the_great_table.h"
-#include "rex/types/helper.h"
+#include "../../reflection/the_great_table.h"
+#include "../helper.h"
 
 namespace rr {
 
@@ -38,7 +38,6 @@ struct TypeHelper<T[size_v]> {
     if (size < type_size()) {
       return false;
     }
-
     // do nothing array is already on the stack in 'memory'
     return true;
   }

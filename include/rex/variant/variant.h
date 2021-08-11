@@ -43,7 +43,6 @@ struct Variant {
     if (pointer == nullptr) {
       throw std::runtime_error("The instance of requested type doesn't exist");
     }
-
     return *pointer;
   }
 

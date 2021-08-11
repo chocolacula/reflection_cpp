@@ -29,7 +29,6 @@ union TightString {
       zero_tail();
       shared = data.shared;
     }
-
     return *this;
   }
 
@@ -49,7 +48,6 @@ union TightString {
       zero_tail();
       shared = data.shared;
     }
-
     return *this;
   }
 
@@ -71,26 +69,27 @@ union TightString {
   };
 
   ~TightString() {
-    if (is_owned())
+    if (is_owned()) {
       owned.~basic_string();
+    }
   };
 
   [[nodiscard]] bool is_owned() const {
-    auto const n = sizeof(std::string) / sizeof(unsigned long);
-    // last two words are zeroes
-    return (_raw[n - 2] | _raw[n - 1]) != 0;
+    return std::memcmp(&_raw[sizeof(std::string_view)], _zeroes, kTailSize) != 0;
   }
 
   std::string_view shared;
   std::string owned;
 
  private:
-  inline void zero_tail() {
-    std::memset(&_raw[sizeof(std::string_view) / sizeof(unsigned long)], 0,
-                sizeof(std::string) - sizeof(std::string_view));
-  }
+  char _raw[sizeof(std::string)];
 
-  unsigned long _raw[sizeof(std::string) / sizeof(unsigned long)];
+  static constexpr uint8_t kTailSize = sizeof(std::string) - sizeof(std::string_view);
+  static constexpr char _zeroes[kTailSize]{};
+
+  inline void zero_tail() {
+    std::memset(&_raw[sizeof(std::string_view)], 0, kTailSize);
+  }
 };
 
 }  // namespace rr

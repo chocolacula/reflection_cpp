@@ -5,5 +5,5 @@
 #include "rex/variable/box.h"
 
 //*****//
-#include "reflected_types/TheEnumClass.rr.h"
-#include "reflected_types/TheStruct1.rr.h"
+#include "reflected_types/Bicycle.rr.h"
+#include "reflected_types/Colors.rr.h"

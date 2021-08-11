@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "expected.h"
-#include "fmt/format.h"
 
 namespace rr {
 
@@ -40,7 +39,6 @@ class ConstexprMap {
   }
 
   Expected<std::string_view> get_name(T value) const {
-
     auto ptr = search_by_value(value, 0, size);
 
     if (ptr == nullptr) {

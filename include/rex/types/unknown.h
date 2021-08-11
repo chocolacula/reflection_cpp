@@ -33,11 +33,6 @@ struct UnknownTypeHelper {
     throw std::runtime_error("Cannot copy a value for unknown type");
   }
 
-  // static Var dictionary_alloc_value(void* key_pointer, Dictioanary* dictioanary) {
-  //
-  //   return dictioanary->push_default(static_cast<float*>(key_pointer));
-  // }
-
   // other types are self registering in The Great Table in the same place of a file
   // but HelperUnknown is NOT a self registering class
   // The Great Table put references to HelperUnknown methods itself

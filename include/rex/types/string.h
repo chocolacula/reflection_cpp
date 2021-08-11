@@ -1,21 +1,22 @@
 #pragma once
 
-#include "common_actions.h"
 #include "rex/reflection/the_great_table.h"
+#include "rex/types/helper.h"
+#include "rex/variable/cell.h"
 
 namespace rr {
 
 template <typename T>
-struct FloatHelper {
+struct StringHelper {
   static TypeInfo reflect(void* value, bool is_const) {
-    return TypeInfo(Float(static_cast<double*>(value), sizeof(T), is_const));
+    return TypeInfo(String(static_cast<T*>(value), is_const));
   }
 };
 
 template <typename T>
-typename std::enable_if_t<std::is_floating_point_v<T>, TypeId>  //
+typename std::enable_if_t<is_string_v<T>, TypeId>  //
 TypeId::get(T* ptr) {
-  static TypeId id(TheGreatTable::record(Actions(&FloatHelper<T>::reflect,         //
+  static TypeId id(TheGreatTable::record(Actions(&StringHelper<T>::reflect,        //
                                                  &CommonHelper<T>::type_name,      //
                                                  &CommonHelper<T>::type_size,      //
                                                  &CommonHelper<T>::alloc_default,  //
