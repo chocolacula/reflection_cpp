@@ -1,7 +1,7 @@
 #pragma once
 
+#include "../reflection/the_great_table.h"
 #include "common_actions.h"
-#include "rex/reflection/the_great_table.h"
 
 namespace rr {
 

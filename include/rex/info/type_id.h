@@ -38,22 +38,6 @@ struct TypeId {
     return TypeId(0);
   }
 
-  // template <typename T>
-  // static typename std::enable_if_t<is_array_v<T>, TypeId>  //
-  // get(T* ptr) {
-  //   return TypeId(0);
-  // }
-
-  template <typename T, size_t size>
-  static TypeId get(T (*array)[size]);
-
-  template <typename T, size_t size>
-  static TypeId get(std::array<T, size>* array);
-
-  template <typename T>
-  static typename std::enable_if_t<is_string_v<T>, TypeId>  //
-  get(T* ptr);
-
   template <typename T>
   static typename std::enable_if_t<std::is_integral_v<T>, TypeId>  //
   get(T* ptr);
@@ -63,14 +47,22 @@ struct TypeId {
   get(T* ptr);
 
   template <typename T>
+  static typename std::enable_if_t<is_string_v<T>, TypeId>  //
+  get(T* ptr);
+
+  template <typename T, size_t size>
+  static TypeId get(T (*array)[size]);
+
+  template <typename T, size_t size>
+  static TypeId get(std::array<T, size>* array);
+
+  template <typename T>
   static typename std::enable_if_t<is_sequence_v<T>, TypeId>  //
   get(T* ptr);
 
   template <typename T>
   static typename std::enable_if_t<is_map_v<T>, TypeId>  //
-  get(T* ptr) {
-    return TypeId(0);
-  }
+  get(T* ptr);
 
   bool operator==(const TypeId& other) const {
     return _id == other._id;

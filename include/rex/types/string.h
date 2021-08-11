@@ -1,8 +1,7 @@
 #pragma once
 
-#include "rex/reflection/the_great_table.h"
-#include "rex/types/helper.h"
-#include "rex/variable/cell.h"
+#include "../reflection/the_great_table.h"
+#include "common_actions.h"
 
 namespace rr {
 
