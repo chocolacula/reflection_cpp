@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cfloat>
+#include <iomanip>
+#include <sstream>
 
 namespace rr {
 
@@ -30,19 +32,16 @@ struct Float {
     return None();
   }
 
-  std::string to_string() const {
-    std::string result;
-    if (_size == 4) {
-      result = std::to_string(*reinterpret_cast<float*>(_value));
-    } else {
-      result = std::to_string(*_value);
-    }
-    result.erase(result.find_last_not_of('0') + 1, std::string::npos);
+  std::string to_string(int precision = 2) const {
+    std::stringstream stream;
+    stream << std::setiosflags(std::ios::fixed) << std::setprecision(precision);
 
-    if (result[result.length() - 1] == '.') {
-      result.pop_back();
+    if (_size == 4) {
+      stream << *reinterpret_cast<float*>(_value);
+    } else {
+      stream << *_value;
     }
-    return result;
+    return stream.str();
   }
 
  private:

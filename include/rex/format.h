@@ -1,5 +1,8 @@
 #pragma once
 
+#include <iomanip>
+
+#include "append_buf.h"
 #include "traits.h"
 
 namespace rr {
@@ -19,9 +22,18 @@ append(std::string* str, T&& arg) {
 }
 
 template <typename T>
-static typename std::enable_if_t<is_number_v<std::remove_reference_t<T>>, void>  //
+static typename std::enable_if_t<std::is_integral_v<std::remove_reference_t<T>> && !std::is_same_v<T, bool>, void>  //
 append(std::string* str, T&& arg) {
   *str += std::to_string(arg);
+}
+
+template <typename T>
+static typename std::enable_if_t<std::is_floating_point_v<std::remove_reference_t<T>>, void>  //
+append(std::string* str, T&& arg) {
+  AppendBuf buf(str);
+  std::ostream stream(&buf);
+  stream << std::setiosflags(std::ios::fixed) << std::setprecision(2);
+  stream << arg;
 }
 
 template <typename T>

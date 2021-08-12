@@ -4,6 +4,7 @@
 
 #include "handwritten/reflection.h"
 #include "rex/serializer/native.h"
+
 using namespace rr;
 
 int main() {
@@ -29,8 +30,6 @@ int main() {
       [&](None) { fmt::print("kWhite recolored to {}\n", the_enum.to_string()); },
       [](Error& err) { fmt::print("Got an error message: {}\n", err.what()); });
 
-  std::cout << "\n";
-
   // if the constant doesn't exist
   // an Error object with message will be returned
   the_enum.parse("kPurple").match(  //
@@ -55,7 +54,7 @@ int main() {
   gtAvalanche.manufacturer = "GT";
   gtAvalanche.model = "Avalanche";
   gtAvalanche.wheel_size_inch = 26;
-  gtAvalanche.frame_weight = 14.8;
+  gtAvalanche.frame_weight = 14.9;
   gtAvalanche.colors = {Colors::kBlack, Colors::kRed};
 
   Bicycle norcoAurum;
@@ -64,7 +63,7 @@ int main() {
   norcoAurum.manufacturer = "Norco";
   norcoAurum.model = "Aurum";
   norcoAurum.wheel_size_inch = 27.5;
-  norcoAurum.frame_weight = 16.4;
+  norcoAurum.frame_weight = 16.2;
   norcoAurum.colors = {Colors::kGray, Colors::kGreen};
 
   Reflection::print(&gtAvalanche);

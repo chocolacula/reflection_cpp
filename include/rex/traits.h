@@ -16,14 +16,6 @@
 namespace rr {
 
 template <typename T>
-struct is_number {
-  static constexpr bool value = (std::is_integral_v<T> && !std::is_same_v<T, bool>) || std::is_floating_point_v<T>;
-};
-
-template <typename T>
-inline constexpr bool is_number_v = is_number<T>::value;
-
-template <typename T>
 struct is_string : std::false_type {};
 
 template <typename T>

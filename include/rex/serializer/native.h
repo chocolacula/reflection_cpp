@@ -44,7 +44,7 @@ class Native {
         },
         [result](const Bool& b) { *result += b.to_string(); },     //
         [result](const Integer& i) { *result += i.to_string(); },  //
-        [result](const Float& f) { *result += f.to_string(); },
+        [result](const Float& f) { *result += f.to_string(6); },
         [result](const String& s) {
           *result += '"';
           *result += s.get();
@@ -66,7 +66,7 @@ class Native {
             *result += ',';
 
             auto value_info = Reflection::reflect(value);
-            *result += "\"value\":";
+            *result += "\"val\":";
             disassemble(value_info, result);
 
             *result += ',';
