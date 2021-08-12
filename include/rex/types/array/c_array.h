@@ -1,19 +1,19 @@
 #pragma once
 
 #include "../../reflection/the_great_table.h"
-#include "../helper.h"
+#include "../type_actions.h"
 
 namespace rr {
 
 template <typename T, size_t size_v>
-struct TypeHelper<T[size_v]> {
+struct TypeActions<T[size_v]> {
 
   static TypeInfo reflect(void* value, bool is_const) {
     return TypeInfo(Array(static_cast<T(*)[size_v]>(value), is_const));
   }
 
   static std::string_view type_name() {
-    static auto name = format("{}[{}]", TypeHelper<T>::type_name(), size_v);
+    static auto name = format("{}[{}]", TypeActions<T>::type_name(), size_v);
     return name;
   }
 
@@ -45,13 +45,13 @@ struct TypeHelper<T[size_v]> {
 
 template <typename T, size_t size_v>
 TypeId TypeId::get(T (*/*unused*/)[size_v]) {
-  static TypeId id(TheGreatTable::record(Actions(&TypeHelper<T[size_v]>::reflect,        //
-                                                 &TypeHelper<T[size_v]>::type_name,      //
-                                                 &TypeHelper<T[size_v]>::type_size,      //
-                                                 &TypeHelper<T[size_v]>::alloc_default,  //
-                                                 &TypeHelper<T[size_v]>::call_delete,    //
-                                                 &TypeHelper<T[size_v]>::copy,           //
-                                                 &TypeHelper<T[size_v]>::copy_default)));
+  static TypeId id(TheGreatTable::record(Actions(&TypeActions<T[size_v]>::reflect,        //
+                                                 &TypeActions<T[size_v]>::type_name,      //
+                                                 &TypeActions<T[size_v]>::type_size,      //
+                                                 &TypeActions<T[size_v]>::alloc_default,  //
+                                                 &TypeActions<T[size_v]>::call_delete,    //
+                                                 &TypeActions<T[size_v]>::copy,           //
+                                                 &TypeActions<T[size_v]>::copy_default)));
   return id;
 }
 

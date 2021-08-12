@@ -1,6 +1,27 @@
 #pragma once
 
+#include <array>
+#include <deque>
+#include <list>
+#include <map>
+#include <queue>
+#include <set>
+#include <stack>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
 namespace rr {
+
+template <typename T>
+struct is_number {
+  static constexpr bool value = (std::is_integral_v<T> && !std::is_same_v<T, bool>) || std::is_floating_point_v<T>;
+};
+
+template <typename T>
+inline constexpr bool is_number_v = is_number<T>::value;
 
 template <typename T>
 struct is_string : std::false_type {};
@@ -63,6 +84,9 @@ inline constexpr bool is_array_v = is_array<T>::value;
 
 template <typename T, size_t size>
 struct is_array<std::array<T, size>> : std::true_type {};
+
+template <class T>
+using array_value_t = std::remove_reference_t<decltype(std::declval<T>()[0])>;
 
 template <typename T>
 struct is_class {

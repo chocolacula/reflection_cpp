@@ -4,7 +4,7 @@
 
 namespace rr {
 
-struct UnknownTypeHelper {
+struct UnknownActions {
   static TypeInfo reflect(void* /*value*/, bool /*is_const*/) {
     throw std::runtime_error("Cannot reflect a value with unknown type");
   }

@@ -6,7 +6,7 @@
 namespace rr {
 
 template <typename T>
-struct StringHelper {
+struct StringActions {
   static TypeInfo reflect(void* value, bool is_const) {
     return TypeInfo(String(static_cast<T*>(value), is_const));
   }
@@ -15,13 +15,13 @@ struct StringHelper {
 template <typename T>
 typename std::enable_if_t<is_string_v<T>, TypeId>  //
 TypeId::get(T* ptr) {
-  static TypeId id(TheGreatTable::record(Actions(&StringHelper<T>::reflect,        //
-                                                 &CommonHelper<T>::type_name,      //
-                                                 &CommonHelper<T>::type_size,      //
-                                                 &CommonHelper<T>::alloc_default,  //
-                                                 &CommonHelper<T>::call_delete,    //
-                                                 &CommonHelper<T>::copy,           //
-                                                 &CommonHelper<T>::copy_default)));
+  static TypeId id(TheGreatTable::record(Actions(&StringActions<T>::reflect,        //
+                                                 &CommonActions<T>::type_name,      //
+                                                 &CommonActions<T>::type_size,      //
+                                                 &CommonActions<T>::alloc_default,  //
+                                                 &CommonActions<T>::call_delete,    //
+                                                 &CommonActions<T>::copy,           //
+                                                 &CommonActions<T>::copy_default)));
   return id;
 }
 

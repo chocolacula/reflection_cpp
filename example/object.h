@@ -10,6 +10,7 @@ struct Bicycle {
   Bicycle() = default;
 
   int id;
+  bool is_hardtail = true;
   std::string manufacturer;
   std::string model;
 
@@ -17,7 +18,7 @@ struct Bicycle {
   float frame_weight;
 
   RR_ALIAS(wheel_size)
-  int wheel_size_inch;
+  float wheel_size_inch;
 
   std::vector<Colors> colors;
 };

@@ -6,7 +6,7 @@
 namespace rr {
 
 template <typename T>
-struct MapHelper {
+struct MapActions {
   static TypeInfo reflect(void* value, bool is_const) {
     return TypeInfo(Map(static_cast<T*>(value), is_const));
   }
@@ -15,7 +15,7 @@ struct MapHelper {
 template <typename T>
 typename std::enable_if_t<is_map_v<T>, TypeId>  //
 TypeId::get(T* ptr) {
-  static TypeId id(TheGreatTable::record(Actions(&MapHelper<T>::reflect,           //
+  static TypeId id(TheGreatTable::record(Actions(&MapActions<T>::reflect,           //
                                                  &CommonHelper<T>::type_name,      //
                                                  &CommonHelper<T>::type_size,      //
                                                  &CommonHelper<T>::alloc_default,  //

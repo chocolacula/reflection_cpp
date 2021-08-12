@@ -31,10 +31,18 @@ struct Float {
   }
 
   std::string to_string() const {
+    std::string result;
     if (_size == 4) {
-      return std::to_string(*reinterpret_cast<float*>(_value));
+      result = std::to_string(*reinterpret_cast<float*>(_value));
+    } else {
+      result = std::to_string(*_value);
     }
-    return std::to_string(*_value);
+    result.erase(result.find_last_not_of('0') + 1, std::string::npos);
+
+    if (result[result.length() - 1] == '.') {
+      result.pop_back();
+    }
+    return result;
   }
 
  private:

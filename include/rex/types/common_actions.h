@@ -6,7 +6,7 @@
 namespace rr {
 
 template <typename T>
-struct CommonHelper {
+struct CommonActions {
   static std::string_view type_name() {
     static auto name = rr_type_name<T>();
     return name;

@@ -91,7 +91,7 @@ std::string sprint(const T* pointer) {
 }
 
 void print(const TypeInfo& info) {
-  std::cout << sprint(info) << std::endl;
+  std::cout << sprint(info) << std::flush;
 }
 
 void print(Var var) {

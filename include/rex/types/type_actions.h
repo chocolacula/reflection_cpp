@@ -4,6 +4,6 @@ namespace rr {
 
 // just a blank struct for further specialization
 template <typename T, typename = void>
-struct TypeHelper {};
+struct TypeActions {};
 
 }  // namespace rr
