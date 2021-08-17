@@ -3,6 +3,7 @@
 #include <stack>
 
 #include "istack.h"
+#include "stack_iterator.h"
 
 namespace rr {
 
@@ -22,21 +23,24 @@ struct StdStack : public IStack {
   void for_each(std::function<void(Var)> callback) const override {
     auto nested_type = TypeId::get<T>();
 
-    for (auto&& entry : *_stack) {
-      callback(Var(&entry, nested_type, true));
+    for (auto it = StackIterator<T>::begin(_stack); it != StackIterator<T>::end(_stack); ++it) {
+      callback(Var(&(*it), nested_type, true));
     }
   }
 
   void for_each(std::function<void(Var)> callback) override {
+
     auto nested_type = TypeId::get<T>();
 
-    for (auto&& entry : *_stack) {
-      callback(Var(&entry, nested_type, _is_const));
+    for (auto it = StackIterator<T>::begin(_stack); it != StackIterator<T>::end(_stack); ++it) {
+      callback(Var(&(*it), nested_type, _is_const));
     }
   }
 
   void clear() override {
-    _stack->clear();
+    for (auto i = 0; i < _stack->size(); i++) {
+      _stack->pop();
+    }
   }
 
   size_t size() override {
@@ -51,7 +55,7 @@ struct StdStack : public IStack {
                           Reflection::type_name(value.type()),       //
                           Reflection::type_name(nested_type)));
     }
-    _stack->insert(*static_cast<const T*>(value.raw()));
+    _stack->push(*static_cast<const T*>(value.raw()));
     return None();
   }
 

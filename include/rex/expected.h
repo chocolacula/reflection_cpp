@@ -3,8 +3,8 @@
 #include <stdexcept>
 #include <variant>
 
-#include "rex/error/error.h"
-#include "rex/variant/variant.h"
+#include "error/error.h"
+#include "variant/variant.h"
 
 namespace rr {
 

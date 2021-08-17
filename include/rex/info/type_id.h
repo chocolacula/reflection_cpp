@@ -12,7 +12,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "../traits.h"
+#include "../tools/traits.h"
 
 namespace rr {
 

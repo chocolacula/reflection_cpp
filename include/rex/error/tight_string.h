@@ -75,7 +75,7 @@ union TightString {
   };
 
   [[nodiscard]] bool is_owned() const {
-    return std::memcmp(&_raw[sizeof(std::string_view)], _zeroes, kTailSize) != 0;
+    return std::memcmp(&_raw[sizeof(std::string_view)], &kZeroes[0], kTailSize) != 0;
   }
 
   std::string_view shared;
@@ -85,7 +85,7 @@ union TightString {
   char _raw[sizeof(std::string)];
 
   static constexpr uint8_t kTailSize = sizeof(std::string) - sizeof(std::string_view);
-  static constexpr char _zeroes[kTailSize]{};
+  static constexpr char kZeroes[kTailSize]{};
 
   inline void zero_tail() {
     std::memset(&_raw[sizeof(std::string_view)], 0, kTailSize);

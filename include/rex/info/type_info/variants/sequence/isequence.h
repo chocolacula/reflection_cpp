@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "../../../../variable/var.h"
 
 namespace rr {

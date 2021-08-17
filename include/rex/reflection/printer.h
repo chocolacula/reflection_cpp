@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include "../info/type_info/type_info.h"
 
 namespace rr {

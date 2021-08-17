@@ -9,8 +9,7 @@ struct Box {
   Box(Box&& other) = default;
 
   explicit Box(TypeId id) : _id(id) {
-
-    if (Reflection::copy_default(id, reinterpret_cast<char*>(_data.stack_mem), kMemSize)) {
+    if (Reflection::copy_default(id, &_data.stack_mem[0], kMemSize)) {
       _optimized = true;
     } else {
       _data.ptr = Reflection::alloc_default(id).raw_mut();
@@ -32,7 +31,7 @@ struct Box {
 
   Var var() {
     if (_optimized) {
-      return Var(_data.stack_mem, _id, false);
+      return Var(&_data.stack_mem[0], _id, false);
     }
     return Var(_data.ptr, _id, false);
   }
@@ -45,7 +44,8 @@ struct Box {
   TypeId _id;
   bool _optimized;
 
-  static const size_t kMemSize = align_sizeof(sizeof(void*), sizeof(std::string));
+  // max size of stack memory for dynamic allocation optimization
+  static const size_t kMemSize = sizeof(std::unordered_map<int, int>);
   union Data {
     void* ptr;
     char stack_mem[kMemSize];

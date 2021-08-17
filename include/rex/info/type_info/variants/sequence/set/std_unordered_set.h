@@ -15,7 +15,7 @@ struct StdUnorderedSet : public ISet {
         _is_const(is_const) {
   }
 
-  Var own_var() override {
+  Var own_var() const override {
     return Var(_set, TypeId::get(_set), _is_const);
   }
 

@@ -20,6 +20,8 @@ link_directories(../RE-flex/lib)
 
 set(SOURCES
         parsing/lexers/compiled/cpp_source.yy.cpp
+        parsing/lexers/compiled/json.yy.cpp
+        parsing/lexers/compiled/yaml.yy.cpp
         main.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})

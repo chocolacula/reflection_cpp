@@ -1,10 +1,10 @@
 #pragma once
 
-#include "rex/info/type_info/variants/sequence/list/list.h"
-#include "rex/info/type_info/variants/sequence/queue/queue.h"
-#include "rex/info/type_info/variants/sequence/set/set.h"
-#include "rex/info/type_info/variants/sequence/stack/stack.h"
-#include "rex/info/type_info/variants/sequence/vector/vector.h"
+#include "list/list.h"
+#include "queue/queue.h"
+#include "set/set.h"
+#include "stack/stack.h"
+#include "vector/vector.h"
 
 namespace rr {
 

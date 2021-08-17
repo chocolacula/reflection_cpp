@@ -3,6 +3,7 @@
 #include <queue>
 
 #include "iqueue.h"
+#include "queue_iterator.h"
 
 namespace rr {
 
@@ -22,21 +23,23 @@ struct StdQueue : public IQueue {
   void for_each(std::function<void(Var)> callback) const override {
     auto nested_type = TypeId::get<T>();
 
-    for (auto&& entry : *_queue) {
-      callback(Var(&entry, nested_type, true));
+    for (auto it = QueueIterator<T>::begin(_queue); it != QueueIterator<T>::end(_queue); ++it) {
+      callback(Var(&(*it), nested_type, true));
     }
   }
 
   void for_each(std::function<void(Var)> callback) override {
     auto nested_type = TypeId::get<T>();
 
-    for (auto&& entry : *_queue) {
-      callback(Var(&entry, nested_type, _is_const));
+    for (auto it = QueueIterator<T>::begin(_queue); it != QueueIterator<T>::end(_queue); ++it) {
+      callback(Var(&(*it), nested_type, _is_const));
     }
   }
 
   void clear() override {
-    _queue->clear();
+    for (auto i = 0; i < _queue->size(); i++) {
+      _queue->pop();
+    }
   }
 
   size_t size() override {

@@ -3,6 +3,7 @@
 #include <array>
 
 #include "../../reflection/the_great_table.h"
+#include "../common_actions.h"
 #include "../type_actions.h"
 
 namespace rr {

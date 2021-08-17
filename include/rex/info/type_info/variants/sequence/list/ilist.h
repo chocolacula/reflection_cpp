@@ -5,6 +5,7 @@
 namespace rr {
 
 struct IList : public ISequence {
+  using ISequence::for_each;
   virtual void for_each(std::function<void(Var)> callback) = 0;
   virtual void pop() = 0;
   virtual void push_front(Var value) = 0;

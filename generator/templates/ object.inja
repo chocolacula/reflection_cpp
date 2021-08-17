@@ -1,0 +1,43 @@
+#pragma once
+
+#include <frozen/unordered_map.h>
+
+#include <string_view>
+
+#include "rex/expected.h"
+#include "rex/expected/error.h"
+
+template <>
+class EnumInfo<{{name}}> {
+ public:
+  // to_string(constant) returns a string representation of the enum constant
+  // and it takes O(1)
+  static ExpectedString to_string(const {{name}} constant) {
+    if (_constants.count(constant) != 0)
+      return _constants.at(constant);
+
+    return Error("Cannot find the constant");
+  }
+
+  // parse(name) returns an enum constant appropriate for the name
+  // and it takes O(n)
+  static Expected<{{name}}, Error> parse(std::string_view name) {
+
+    for (auto&& item : _constants) {
+      if (item.second == name)
+        return item.first;
+    }
+
+    return Error("Cannot parse the constant");
+  }
+
+ private:
+  static constexpr frozen::unordered_map<TheEnumClass, std::string_view, {{length(enums)}}> _constants = {
+    {% for item in enums -%}
+    {%- if not loop.is_last -%}
+      {{"{"}}{{name}}::{{item}}, "{{item}}"},
+    {% else -%}
+      {{"{"}}{{name}}::{{item}}, "{{item}}"}};
+    {%- endif -%}
+    {%- endfor -%}
+};

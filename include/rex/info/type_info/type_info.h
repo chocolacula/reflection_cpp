@@ -2,18 +2,18 @@
 
 #include <string_view>
 
-#include "rex/expected.h"
-#include "rex/info/field_info.h"
-#include "rex/info/type_info/variants/array/array.h"
-#include "rex/info/type_info/variants/bool.h"
-#include "rex/info/type_info/variants/enum/enum.h"
-#include "rex/info/type_info/variants/float.h"
-#include "rex/info/type_info/variants/integer.h"
-#include "rex/info/type_info/variants/map/map.h"
-#include "rex/info/type_info/variants/object.h"
-#include "rex/info/type_info/variants/sequence/sequence.h"
-#include "rex/info/type_info/variants/string.h"
-#include "rex/variant/variant.h"
+#include "../../expected.h"
+#include "../../variant/variant.h"
+#include "../field_info.h"
+#include "variants/array/array.h"
+#include "variants/bool.h"
+#include "variants/enum/enum.h"
+#include "variants/float.h"
+#include "variants/integer.h"
+#include "variants/map/map.h"
+#include "variants/object.h"
+#include "variants/sequence/sequence.h"
+#include "variants/string.h"
 
 namespace rr {
 

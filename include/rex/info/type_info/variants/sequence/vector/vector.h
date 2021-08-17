@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "std_vector.h"
 
 namespace rr {

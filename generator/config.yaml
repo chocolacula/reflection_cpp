@@ -1,0 +1,10 @@
+%YAML 1.2
+
+templates: #pathes to template files
+  enum: "templates/enum.inja"
+  object: "templates/object.inja"
+
+input:
+  - "config.h"
+
+output: "self_generated"

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "rex/expected.h"
+#include "../../../expected.h"
+#include "../../../tools/format.h"
 
 namespace rr {
 
@@ -15,14 +16,16 @@ struct Integer {
 
   int64_t get() const {
     switch (_size) {
-      case 1:
+      case sizeof(int8_t):
         return *reinterpret_cast<int8_t*>(_value);
-      case 2:
+
+      case sizeof(int16_t):
         return *reinterpret_cast<int16_t*>(_value);
-      case 4:
+
+      case sizeof(int32_t):
         return *reinterpret_cast<int32_t*>(_value);
     }
-    return *_value;
+    return *reinterpret_cast<int64_t*>(_value);
   }
 
   Expected<None> set(int64_t value) {
@@ -34,13 +37,15 @@ struct Integer {
     }
     if (is_signed()) {
       switch (_size) {
-        case 1:
+        case sizeof(int8_t):
           *reinterpret_cast<int8_t*>(_value) = value;
           break;
-        case 2:
+
+        case sizeof(int16_t):
           *reinterpret_cast<int16_t*>(_value) = value;
           break;
-        case 4:
+
+        case sizeof(int32_t):
           *reinterpret_cast<int32_t*>(_value) = value;
           break;
       }
@@ -50,13 +55,15 @@ struct Integer {
         return Error("Cannot assign negative value to unsigned");
       }
       switch (_size) {
-        case 1:
+        case sizeof(uint8_t):
           *reinterpret_cast<uint8_t*>(_value) = value;
           break;
-        case 2:
+
+        case sizeof(uint16_t):
           *reinterpret_cast<uint16_t*>(_value) = value;
           break;
-        case 4:
+
+        case sizeof(uint32_t):
           *reinterpret_cast<uint32_t*>(_value) = value;
           break;
       };
@@ -79,12 +86,12 @@ struct Integer {
   const bool _is_const;
 
   inline bool is_neg() const {
-    int64_t v = *_value;
+    int64_t v = *reinterpret_cast<int64_t*>(_value);
     return (v << (64U - _size * 8)) < 0;
   }
 
   inline bool is_fit(uint64_t v) const {
-    if (_size == 8) {
+    if (_size == sizeof(uint64_t)) {
       return true;
     }
     uint64_t mask = -1;

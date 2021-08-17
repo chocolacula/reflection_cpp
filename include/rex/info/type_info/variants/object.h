@@ -3,8 +3,8 @@
 #include <unordered_map>
 #include <utility>
 
-#include "rex/expected.h"
-#include "rex/variable/var.h"
+#include "../../../expected.h"
+#include "../../../variable/var.h"
 
 namespace rr {
 
@@ -12,7 +12,7 @@ namespace rr {
 /// just a registry of types and value pointers
 struct Object {
 
-  Object(Var var, std::unordered_map<std::string_view, Var>&& fields) : _var(var), _fields(fields) {
+  Object(Var var, std::unordered_map<std::string_view, Var>&& fields) : _fields(fields), _var(var) {
   }
 
   Expected<Var> get_field(std::string_view name) {

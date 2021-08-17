@@ -1,14 +1,14 @@
 #pragma once
 
-#include "../tools.h"
-#include "rex/reflection/the_great_table.h"
+#include "../reflection/the_great_table.h"
+#include "../tools/names.h"
 
 namespace rr {
 
 template <typename T>
 struct CommonActions {
   static std::string_view type_name() {
-    static auto name = rr_type_name<T>();
+    static auto name = Names<T>::get();
     return name;
   }
 

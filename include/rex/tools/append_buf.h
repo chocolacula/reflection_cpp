@@ -1,9 +1,6 @@
 #pragma once
 
 #include <streambuf>
-// #include <iostream>
-// #include <ostream>
-// #include <string>
 
 namespace rr {
 
@@ -12,15 +9,15 @@ class AppendBuf : public std::streambuf {
   explicit AppendBuf(std::string* str) : _buf(str) {
   }
 
-  virtual int_type overflow(int_type c) {
+  int_type overflow(int_type c) override {
     if (c != EOF) {
       _buf->push_back(c);
     }
     return c;
   }
 
-  virtual std::streamsize xsputn(const char* s, std::streamsize n) {
-    _buf->insert(_buf->end(), s, s + n);
+  std::streamsize xsputn(const char* s, std::streamsize n) override {
+    _buf->append(s, s + n);
     return n;
   }
 

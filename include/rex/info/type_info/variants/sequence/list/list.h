@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "std_deque.h"
 #include "std_list.h"
 
@@ -9,11 +11,11 @@ struct List : public IList {
   List() = delete;
 
   template <typename T>
-  List(std::list<T>* list, bool is_const) : _list(std::make_shared<StdList>(list, is_const)) {
+  List(std::list<T>* list, bool is_const) : _list(std::make_shared<StdList<T>>(list, is_const)) {
   }
 
   template <typename T>
-  List(std::deque<T>* deque, bool is_const) : _list(std::make_shared<StdDeque>(deque, is_const)) {
+  List(std::deque<T>* deque, bool is_const) : _list(std::make_shared<StdDeque<T>>(deque, is_const)) {
   }
 
   Var own_var() const override {

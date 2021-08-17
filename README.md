@@ -1,10 +1,8 @@
-# Reflection header only solution for C++
-
-Note: namespace ```rr``` read as Required Reflection</br>
+# Required Reflection header only solution for C++
 
 It parses C++ sourcecode, reads attributes and generates static classes via template files.
 
-The main idea is use kinda dynamic typing and <b>RunTime Type Checking</b> for some type agnostic operations.</br>
+The main idea is use kinda dynamic typing and <b>Run Time Type Checking</b> for some type agnostic operations.</br>
 It makes possible determine a variable type and do right job - print, serialize/deserialize or whatever.
 
 ### Installation

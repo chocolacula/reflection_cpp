@@ -1,4 +1,6 @@
 cpp_source.yy.cpp
 cpp_source.yy.h
-ini.yy.cpp
-ini.yy.h
+json.yy.cpp
+json.yy.h
+yaml.yy.cpp
+yaml.yy.h

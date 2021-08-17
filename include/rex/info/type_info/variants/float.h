@@ -4,6 +4,8 @@
 #include <iomanip>
 #include <sstream>
 
+#include "../../../expected.h"
+
 namespace rr {
 
 struct Float {
@@ -11,7 +13,7 @@ struct Float {
   }
 
   double get() {
-    if (_size == 4) {
+    if (_size == sizeof(float)) {
       return *reinterpret_cast<float*>(_value);
     }
     return *_value;
@@ -21,7 +23,7 @@ struct Float {
     if (_is_const) {
       return Error("Trying to set const value");
     }
-    if (_size == 4) {
+    if (_size == sizeof(float)) {
       if (value > FLT_MAX || value < FLT_MIN) {
         return Error("The value too big to set float variable");
       }
@@ -36,7 +38,7 @@ struct Float {
     std::stringstream stream;
     stream << std::setiosflags(std::ios::fixed) << std::setprecision(precision);
 
-    if (_size == 4) {
+    if (_size == sizeof(float)) {
       stream << *reinterpret_cast<float*>(_value);
     } else {
       stream << *_value;

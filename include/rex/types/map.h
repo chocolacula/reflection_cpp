@@ -16,12 +16,12 @@ template <typename T>
 typename std::enable_if_t<is_map_v<T>, TypeId>  //
 TypeId::get(T* ptr) {
   static TypeId id(TheGreatTable::record(Actions(&MapActions<T>::reflect,           //
-                                                 &CommonHelper<T>::type_name,      //
-                                                 &CommonHelper<T>::type_size,      //
-                                                 &CommonHelper<T>::alloc_default,  //
-                                                 &CommonHelper<T>::call_delete,    //
-                                                 &CommonHelper<T>::copy,           //
-                                                 &CommonHelper<T>::copy_default)));
+                                                 &CommonActions<T>::type_name,      //
+                                                 &CommonActions<T>::type_size,      //
+                                                 &CommonActions<T>::alloc_default,  //
+                                                 &CommonActions<T>::call_delete,    //
+                                                 &CommonActions<T>::copy,           //
+                                                 &CommonActions<T>::copy_default)));
   return id;
 }
 

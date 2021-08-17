@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "std_set.h"
 #include "std_unordered_set.h"
 
