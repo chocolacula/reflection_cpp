@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "rex/attributes.h"
+#include "rr/attributes.h"
 
 RR_OBJECT()
 struct Config {

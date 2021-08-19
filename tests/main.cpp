@@ -1,7 +1,7 @@
 #include <string_view>
 
 #include "gtest/gtest.h"
-#include "rex/error/error.h"
+#include "rr/error/error.h"
 
 using namespace rr;
 

@@ -10,3 +10,6 @@
 [submodule "fmt"]
 	path = fmt
 	url = https://github.com/fmtlib/fmt
+[submodule "generator/tclap"]
+	path = generator/tclap
+	url = https://github.com/mirror/tclap.git

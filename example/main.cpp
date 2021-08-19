@@ -1,16 +1,19 @@
 #include <fmt/core.h>
 
 #include "handwritten/reflection.h"
-#include "rex/serializer/native.h"
+#include "rr/serializer/native.h"
 
 using namespace rr;
 
 int main() {
   // You can get an Enum constant string representation by reflecting them
   auto white = Colors::kWhite;
+
+  // Reflection::reflect(ptr) returns a TypeInfo structure
+  // which could represent Integer, Float, Enum and other kinds of types
   auto white_info = Reflection::reflect(&white);
 
-  // and check if it does exist and everything got right
+  // You can check kind of the TypeInfo by calling is<Type>() and get it further
   if (white_info.is<Enum>()) {
     fmt::print("it's a string representation of {}\n", white_info.get<Enum>().to_string());
   }

@@ -16,5 +16,11 @@ set(SOURCES
     main.cpp
     ../fmt/src/format.cc)
 
-add_executable(${PROJECT_NAME} ${SOURCES})
+# add_custom_command(
+#     OUTPUT  ${CMAKE_SOURCE_DIR}/proto/cenc_header.pb.cc
+#     COMMAND protoc -I${CMAKE_SOURCE_DIR}/proto cenc_header.proto --cpp_out=${CMAKE_SOURCE_DIR}/proto
+#     DEPENDS proto/cenc_header.proto
+#     COMMENT "Generating sources from .proto files"
+# )
 
+add_executable(${PROJECT_NAME} ${SOURCES})

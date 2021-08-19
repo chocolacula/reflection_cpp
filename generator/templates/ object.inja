@@ -4,8 +4,8 @@
 
 #include <string_view>
 
-#include "rex/expected.h"
-#include "rex/expected/error.h"
+#include "rr/expected.h"
+#include "rr/expected/error.h"
 
 template <>
 class EnumInfo<{{name}}> {
