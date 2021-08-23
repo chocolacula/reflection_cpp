@@ -29,3 +29,7 @@ set(SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_link_libraries(${PROJECT_NAME} libreflex.a)
+
+configure_file(config.yaml ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config.yaml COPYONLY)
+configure_file(templates/object.inja ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/templates/object.inja COPYONLY)
+configure_file(templates/enum.inja   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/templates/enum.inja COPYONLY)
