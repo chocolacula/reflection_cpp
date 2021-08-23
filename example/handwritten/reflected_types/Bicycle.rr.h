@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rr/reflection/the_great_table.h"
+#include "rr/types/common_actions.h"
 #include "rr/types/type_actions.h"
 
 // from input parameter
@@ -25,13 +27,11 @@ struct TypeActions<Bicycle> {
 
 template <>
 TypeId TypeId::get(Bicycle* /*unused*/) {
-  static TypeId id(TheGreatTable::record(Actions(&TypeActions<Bicycle>::reflect,          //
-                                                 &CommonActions<Bicycle>::type_name,      //
-                                                 &CommonActions<Bicycle>::type_size,      //
-                                                 &CommonActions<Bicycle>::alloc_default,  //
-                                                 &CommonActions<Bicycle>::call_delete,    //
-                                                 &CommonActions<Bicycle>::copy,           //
-                                                 &CommonActions<Bicycle>::copy_default)));
+  static TypeId id(TheGreatTable::record(Actions(&TypeActions<Bicycle>::reflect,      //
+                                                 &CommonActions<Bicycle>::type_name,  //
+                                                 &CommonActions<Bicycle>::type_size,  //
+                                                 &CommonActions<Bicycle>::call_new,   //
+                                                 &CommonActions<Bicycle>::call_delete)));
   return id;
 }
 

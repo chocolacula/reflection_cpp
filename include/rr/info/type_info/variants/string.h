@@ -1,5 +1,10 @@
 #pragma once
 
+#include <string>
+
+#include "../../../expected.h"
+#include "../../../variable/var.h"
+
 namespace rr {
 
 struct String {
@@ -28,6 +33,7 @@ struct String {
     } else {
       *static_cast<std::string*>(_var.raw_mut()) = value;
     }
+    return None();
   }
 
  private:

@@ -7,9 +7,6 @@
 [submodule "googletest"]
 	path = googletest
 	url = https://github.com/google/googletest.git
-[submodule "fmt"]
-	path = fmt
-	url = https://github.com/fmtlib/fmt
 [submodule "generator/tclap"]
 	path = generator/tclap
 	url = https://github.com/mirror/tclap.git

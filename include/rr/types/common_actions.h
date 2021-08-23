@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 #include "../reflection/the_great_table.h"
 #include "../tools/names.h"
 
@@ -16,26 +18,21 @@ struct CommonActions {
     return sizeof(T);
   }
 
-  static Var alloc_default() {
-    auto* p = new T();
-    return Var(p);
-  }
-
-  static void call_delete(void* pointer) {
-    delete static_cast<T*>(pointer);
-  }
-
-  static void copy(void* to, const void* from) {
-    *static_cast<T*>(to) = *static_cast<const T*>(from);
-  }
-
-  static bool copy_default(void* to, size_t size) {
-    if (size < type_size()) {
-      return false;
+  static void* call_new(void* place, size_t place_size) {
+    if (place_size >= sizeof(T)) {
+      new (place) T();
+      return place;
     }
+    auto* p = new T();
+    return p;
+  }
 
-    *static_cast<T*>(to) = T();
-    return true;
+  static void call_delete(void* pointer, bool in_place) {
+    if (in_place) {
+      static_cast<T*>(pointer)->~T();
+    } else {
+      delete static_cast<T*>(pointer);
+    }
   }
 };
 

@@ -10,6 +10,12 @@ struct IntActions {
   static TypeInfo reflect(void* value, bool is_const) {
     return TypeInfo(Integer(static_cast<uint64_t*>(value), sizeof(T), is_signed, is_const));
   }
+
+  static void call_delete(void* pointer, bool in_place) {
+    if (!in_place) {
+      delete static_cast<T*>(pointer);
+    }
+  }
 };
 
 template <typename T>
@@ -18,10 +24,8 @@ TypeId::get(T* ptr) {
   static TypeId id(TheGreatTable::record(Actions(&IntActions<T, std::is_signed_v<T>>::reflect,  //
                                                  &CommonActions<T>::type_name,                  //
                                                  &CommonActions<T>::type_size,                  //
-                                                 &CommonActions<T>::alloc_default,              //
-                                                 &CommonActions<T>::call_delete,                //
-                                                 &CommonActions<T>::copy,                       //
-                                                 &CommonActions<T>::copy_default)));
+                                                 &CommonActions<T>::call_new,                   //
+                                                 &IntActions<T, std::is_signed_v<T>>::call_delete)));
   return id;
 }
 

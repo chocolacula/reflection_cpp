@@ -19,6 +19,10 @@ struct StdUnorderedSet : public ISet {
     return Var(_set, TypeId::get(_set), _is_const);
   }
 
+  TypeId nested_type() const override {
+    return TypeId::get<T>();
+  }
+
   void for_each(std::function<void(Var)> callback) const override {
     for (auto&& entry : *_set) {
       // const values

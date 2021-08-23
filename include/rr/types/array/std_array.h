@@ -26,13 +26,11 @@ struct TypeActions<std::array<T, size_v>> {
 
 template <typename T, size_t size_v>
 TypeId TypeId::get(std::array<T, size_v>* /*unused*/) {
-  static TypeId id(TheGreatTable::record(Actions(&TypeActions<std::array<T, size_v>>::reflect,          //
-                                                 &CommonActions<std::array<T, size_v>>::type_name,      //
-                                                 &CommonActions<std::array<T, size_v>>::type_size,      //
-                                                 &CommonActions<std::array<T, size_v>>::alloc_default,  //
-                                                 &CommonActions<std::array<T, size_v>>::call_delete,    //
-                                                 &CommonActions<std::array<T, size_v>>::copy,           //
-                                                 &TypeActions<std::array<T, size_v>>::copy_default)));
+  static TypeId id(TheGreatTable::record(Actions(&TypeActions<std::array<T, size_v>>::reflect,      //
+                                                 &CommonActions<std::array<T, size_v>>::type_name,  //
+                                                 &CommonActions<std::array<T, size_v>>::type_size,  //
+                                                 &CommonActions<std::array<T, size_v>>::call_new,   //
+                                                 &CommonActions<std::array<T, size_v>>::call_delete)));
   return id;
 }
 

@@ -8,9 +8,9 @@
 
 namespace rr {
 
-#define BASE Variant<T, Error>
+#define BASE Variant<T, ErrorT>
 
-template <typename T>
+template <typename T, typename ErrorT = Error>
 struct Expected : public BASE {
 
   Expected(const T& value) : BASE(value) {  // NOLINT implicit constructor
@@ -19,10 +19,10 @@ struct Expected : public BASE {
   Expected(T&& value) : BASE(std::move(value)) {  // NOLINT implicit constructor
   }
 
-  Expected(const Error& error) : BASE(error) {  // NOLINT implicit constructor
+  Expected(const ErrorT& error) : BASE(error) {  // NOLINT implicit constructor
   }
 
-  Expected(Error&& error) : BASE(std::move(error)) {  // NOLINT implicit constructor
+  Expected(ErrorT&& error) : BASE(std::move(error)) {  // NOLINT implicit constructor
   }
 
   Expected(const Expected& other) noexcept : BASE::_content(other._content) {
@@ -52,14 +52,14 @@ struct Expected : public BASE {
   }
 
   bool is_error() {
-    return BASE::template is<Error>();
+    return BASE::template is<ErrorT>();
   }
 
   T unwrap() {
     auto pointer = std::get_if<T>(&(BASE::_content));
 
     if (pointer == nullptr) {
-      throw std::runtime_error(std::get<Error>(BASE::_content).what().data());
+      throw std::runtime_error(std::get<ErrorT>(BASE::_content).what().data());
     }
     return *pointer;
   }

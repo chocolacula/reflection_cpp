@@ -22,6 +22,10 @@ struct Array final : public IArray {
     return _array->own_var();
   }
 
+  TypeId nested_type() const override {
+    return _array->nested_type();
+  }
+
   Expected<Var> at(size_t idx) override {
     return _array->at(idx);
   }

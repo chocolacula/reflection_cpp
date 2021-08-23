@@ -1,6 +1,10 @@
 #pragma once
 
+#include <cstddef>
+#include <filesystem>
 #include <iomanip>
+#include <string>
+#include <type_traits>
 
 #include "append_buf.h"
 #include "traits.h"
@@ -9,6 +13,14 @@ namespace rr {
 
 template <typename T>
 static typename std::enable_if_t<is_string_v<std::remove_reference_t<T>>, void>  //
+append(std::string* str, T&& arg) {
+  *str += arg;
+}
+
+template <typename T>
+static typename std::enable_if_t<std::is_same_v<std::remove_reference_t<T>, char*> ||
+                                     std::is_same_v<std::remove_reference_t<T>, const char*>,
+                                 void>  //
 append(std::string* str, T&& arg) {
   *str += arg;
 }
@@ -42,6 +54,12 @@ append(std::string* str, T&& arg) {
   *str += arg ? "true" : "false";
 }
 
+template <typename T>
+static typename std::enable_if_t<std::is_same_v<std::remove_reference_t<T>, std::filesystem::path>, void>  //
+append(std::string* str, T&& arg) {
+  *str += arg.string();
+}
+
 static void format(std::string* result, std::string_view fmt, size_t i) {
   *result += fmt.substr(i, fmt.size() - i);
 }
@@ -50,7 +68,7 @@ template <typename T, typename... Ts>
 static void format(std::string* result, std::string_view fmt, size_t i, T&& arg, Ts&&... args) {
   auto pos = fmt.find('{', i);
 
-  if (pos == -1) {
+  if (pos == std::string::npos) {
     *result += fmt.substr(i, fmt.size() - i);
     return;
   }

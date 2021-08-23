@@ -9,24 +9,12 @@ struct Box {
   Box(Box&& other) = default;
 
   explicit Box(TypeId id) : _id(id) {
-    if (Reflection::copy_default(id, &_data.stack_mem[0], kMemSize)) {
-      _optimized = true;
-    } else {
-      _data.ptr = Reflection::alloc_default(id).raw_mut();
-      _optimized = false;
-    }
+    auto* ptr = Reflection::call_new(id, &_data.stack_mem[0], kMemSize);
+    _optimized = (ptr == &_data.stack_mem[0]);
   }
 
   ~Box() {
-    if (!_optimized) {
-      Reflection::call_delete(Var(_data.ptr, _id, false));
-    }
-  }
-
-  Box clone() {
-    auto new_box = Box(_id);
-    Reflection::copy(new_box.var(), var());
-    return new_box;
+    Reflection::call_delete(Var(&_data.stack_mem[0], _id, false), _optimized);
   }
 
   Var var() {
@@ -34,10 +22,6 @@ struct Box {
       return Var(&_data.stack_mem[0], _id, false);
     }
     return Var(_data.ptr, _id, false);
-  }
-
-  static size_t s() {
-    return sizeof(_data);
   }
 
  private:

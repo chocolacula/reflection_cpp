@@ -52,6 +52,10 @@ struct Sequence : public BASE, public ISequence {
     return match([](auto&& s) -> Var { return s.own_var(); });
   }
 
+  TypeId nested_type() const override {
+    return match([](auto&& s) -> TypeId { return s.nested_type(); });
+  }
+
   void for_each(std::function<void(Var)> callback) const override {
     match([&](auto&& s) { s.for_each(callback); });
   }

@@ -15,6 +15,10 @@ struct CArray final : public IArray {
     return Var(_array, TypeId::get<T(*)[size_v]>(), _is_const);
   }
 
+  TypeId nested_type() const override {
+    return TypeId::get<T>();
+  }
+
   void for_each(std::function<void(Var)> callback) const override {
     auto nested_type = TypeId::get<T>();
 

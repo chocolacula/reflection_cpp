@@ -22,6 +22,10 @@ struct List : public IList {
     return _list->own_var();
   }
 
+  TypeId nested_type() const override {
+    return _list->nested_type();
+  }
+
   void for_each(std::function<void(Var)> callback) const override {
     static_cast<const ISequence*>(_list.get())->for_each(callback);
   }

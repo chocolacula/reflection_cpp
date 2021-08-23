@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <iostream>
 
 #include "printer.h"
@@ -30,20 +31,12 @@ size_t type_size(TypeId id) {
   return TheGreatTable::data()[id.number()].type_size();
 }
 
-Var alloc_default(TypeId id) {
-  return TheGreatTable::data()[id.number()].alloc_default();
+void* call_new(TypeId id, void* place, size_t place_size) {
+  return TheGreatTable::data()[id.number()].call_new(place, place_size);
 }
 
-void call_delete(Var variable) {
-  TheGreatTable::data()[variable.type().number()].call_delete(variable.raw_mut());
-}
-
-void copy(Var to, Var from) {
-  TheGreatTable::data()[from.type().number()].copy(to.raw_mut(), from.raw());
-}
-
-bool copy_default(TypeId id, void* to, size_t size) {
-  return TheGreatTable::data()[id.number()].copy_default(to, size);
+void call_delete(Var variable, bool in_place) {
+  TheGreatTable::data()[variable.type().number()].call_delete(variable.raw_mut(), in_place);
 }
 
 }  // namespace rr::Reflection

@@ -17,6 +17,10 @@ struct Queue : public IQueue {
     return _queue->own_var();
   }
 
+  TypeId nested_type() const override {
+    return _queue->nested_type();
+  }
+
   void for_each(std::function<void(Var)> callback) const override {
     static_cast<const ISequence*>(_queue.get())->for_each(callback);
   }

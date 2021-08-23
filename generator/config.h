@@ -8,8 +8,9 @@
 RR_OBJECT()
 struct Config {
   struct Templates {
-    std::string template_enum;
-    std::string template_object;
+    RR_ALIAS(enum)
+    std::string for_enum;
+    std::string object;
   } templates;
 
   std::string root_dir;

@@ -22,6 +22,10 @@ struct Set : public ISet {
     return _set->own_var();
   }
 
+  TypeId nested_type() const override {
+    return _set->nested_type();
+  }
+
   void for_each(std::function<void(Var)> callback) const override {
     _set->for_each(callback);
   }

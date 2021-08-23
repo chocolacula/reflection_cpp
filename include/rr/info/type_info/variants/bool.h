@@ -1,5 +1,9 @@
 #pragma once
 
+#include <algorithm>
+#include <cctype>
+#include <string_view>
+
 namespace rr {
 
 struct Bool {
@@ -20,7 +24,7 @@ struct Bool {
 
   void parse(std::string_view str) {
     std::string low(str);
-    std::transform(low.begin(), low.end(), low.begin(), ::tolower);
+    std::transform(low.begin(), low.end(), low.begin(), [](char c) -> char { return std::tolower(c); });
     *_value = str == "true";
   }
 

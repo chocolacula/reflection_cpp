@@ -1,5 +1,7 @@
 #!/bin/bash
 
-../../RE-flex/bin/reflex ./cpp_source.l −−outfile=compiled/cpp_source.yy.cpp −−header-file=compiled/cpp_source.yy.h
-../../RE-flex/bin/reflex ./json.l −−outfile=compiled/json.yy.cpp −−header-file=compiled/json.yy.h
-../../RE-flex/bin/reflex ./yaml.l −−outfile=compiled/yaml.yy.cpp −−header-file=compiled/yaml.yy.h
+PWD=`dirname $0`
+
+$PWD/../../RE-flex/bin/reflex $PWD/cpp_source.l −−outfile=$PWD/compiled/cpp_source.yy.cpp −−header-file=$PWD/compiled/cpp_source.yy.h
+$PWD/../../RE-flex/bin/reflex $PWD/json.l −−outfile=$PWD/compiled/json.yy.cpp −−header-file=$PWD/compiled/json.yy.h
+$PWD/../../RE-flex/bin/reflex $PWD/yaml.l −−outfile=$PWD/compiled/yaml.yy.cpp −−header-file=$PWD/compiled/yaml.yy.h

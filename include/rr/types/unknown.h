@@ -17,20 +17,12 @@ struct UnknownActions {
     return 0;
   }
 
-  static Var alloc_default() {
+  static void* call_new(void* place, size_t place_size) {
     throw std::runtime_error("Cannot alloc a value for unknown type");
   }
 
-  static void call_delete(void* pointer) {
+  static void call_delete(void* pointer, bool in_place) {
     throw std::runtime_error("Cannot delete a value for unknown type");
-  }
-
-  static void copy(void* to, const void* from) {
-    throw std::runtime_error("Cannot copy values for unknown type");
-  }
-
-  static bool copy_default(void* to, size_t size) {
-    throw std::runtime_error("Cannot copy a value for unknown type");
   }
 
   // other types are self registering in The Great Table in the same place of a file

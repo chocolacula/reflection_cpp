@@ -15,6 +15,10 @@ struct Stack : public IStack {
     return _stack->own_var();
   }
 
+  TypeId nested_type() const override {
+    return _stack->nested_type();
+  }
+
   void for_each(std::function<void(Var)> callback) const override {
     static_cast<const ISequence*>(_stack.get())->for_each(callback);
   }

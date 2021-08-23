@@ -17,6 +17,10 @@ struct Vector : public IVector {
     return _vector->own_var();
   }
 
+  TypeId nested_type() const override {
+    return _vector->nested_type();
+  }
+
   void for_each(std::function<void(Var)> callback) const override {
     static_cast<const ISequence*>(_vector.get())->for_each(callback);
   }

@@ -20,6 +20,10 @@ struct StdQueue : public IQueue {
     return Var(_queue, TypeId::get(_queue), _is_const);
   }
 
+  TypeId nested_type() const override {
+    return TypeId::get<T>();
+  }
+
   void for_each(std::function<void(Var)> callback) const override {
     auto nested_type = TypeId::get<T>();
 

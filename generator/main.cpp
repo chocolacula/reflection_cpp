@@ -1,31 +1,56 @@
+#include <linux/limits.h>
+#include <unistd.h>
+
+#include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <ostream>
 
+#include "config.h"
+#include "rr/reflection/printer.h"
+#include "rr/serializer/parsing/parser_yaml.h"
+#include "rr/tools/format.h"
+#include "self_generated/reflection.h"
 #include "tclap/CmdLine.h"
-#include "version.h"
 
 // #include "parsing/enum.h"
 // #include "parsing/struct.h"
 
-int main(int argc, char** argv) {
+std::filesystem::path current_dir() {
+  char exe_path[PATH_MAX];
+  ssize_t size = readlink("/proc/self/exe", exe_path, PATH_MAX);
 
-  TCLAP::CmdLine cmd("Required Reflection generator", ' ', PROJECT_VER);
+  return std::filesystem::path(exe_path).remove_filename();
+}
 
+int main(int argc, const char** argv) {
+
+  TCLAP::CmdLine cmd("Required Reflection code generator", ' ', VERSION);
+
+  auto root = current_dir();
+
+  root.append("config.yaml");
   TCLAP::ValueArg<std::string> c_arg("c", "config", "Explicitly specify path to the config file",  //
-                                     false, "./config.yaml", "path");
+                                     false, root.string(), "path");
+  root.remove_filename();
+
   cmd.add(c_arg);
   cmd.parse(argc, argv);
 
   std::string c_path = c_arg.getValue();
 
-  // Do what you intend.
-  if (!c_path.empty()) {
-    std::cout << c_path << std::endl;
+  std::ifstream input;
+  input.open(c_path);
+
+  if (!input.is_open()) {
+    std::cerr << "Cannot find the config file, aborted" << std::endl;
+    return -1;
   }
 
-  std::ifstream input;
-  input.open("../example/enum.h");
+  Config config;
+  auto conf_info = rr::Reflection::reflect(&config);
+
+  ParserYaml yaml(input);
+  yaml.deserialize(&conf_info);
 
   // std::string word;
   // while (input >> word) {
@@ -44,4 +69,5 @@ int main(int argc, char** argv) {
   //     parse_struct(&input);
   //   }
   // }
+  return 0;
 }

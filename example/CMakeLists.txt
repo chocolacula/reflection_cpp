@@ -10,11 +10,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/output)
 
 include_directories(../include)
 include_directories(../generator/inja/third_party/include)
-include_directories(../fmt/include)
 
 set(SOURCES
-    main.cpp
-    ../fmt/src/format.cc)
+    main.cpp)
 
 # add_custom_command(
 #     OUTPUT  ${CMAKE_SOURCE_DIR}/proto/cenc_header.pb.cc

@@ -31,13 +31,11 @@ struct TypeActions<Colors> {
 
 template <>
 TypeId TypeId::get(Colors* /*unused*/) {
-  static TypeId id(TheGreatTable::record(Actions(&TypeActions<Colors>::reflect,          //
-                                                 &CommonActions<Colors>::type_name,      //
-                                                 &CommonActions<Colors>::type_size,      //
-                                                 &CommonActions<Colors>::alloc_default,  //
-                                                 &CommonActions<Colors>::call_delete,    //
-                                                 &CommonActions<Colors>::copy,           //
-                                                 &CommonActions<Colors>::copy_default)));
+  static TypeId id(TheGreatTable::record(Actions(&TypeActions<Colors>::reflect,      //
+                                                 &CommonActions<Colors>::type_name,  //
+                                                 &CommonActions<Colors>::type_size,  //
+                                                 &CommonActions<Colors>::call_new,   //
+                                                 &CommonActions<Colors>::call_delete)));
   return id;
 }
 

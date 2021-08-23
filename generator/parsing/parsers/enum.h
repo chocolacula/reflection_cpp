@@ -11,7 +11,7 @@
 #include "states/enum.h"
 
 // parses only one enum and ends execution
-static Expected<nlohmann::json, ErrorParse> parse_enum(LexerCpp* lexer) {
+rr::Expected<nlohmann::json, ErrorParse> parse_enum(LexerCpp* lexer) {
 
   StatesEnum current_state = StatesEnum::kAmbiguous;
 

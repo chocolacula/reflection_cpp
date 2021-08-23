@@ -1,43 +1,41 @@
 #pragma once
 
-#include <frozen/unordered_map.h>
+#include "rr/reflection/the_great_table.h"
+#include "rr/types/common_actions.h"
+#include "rr/types/type_actions.h"
 
-#include <string_view>
+// injected
+#include "{{origin_header}}"
 
-#include "rr/expected.h"
-#include "rr/expected/error.h"
+namespace rr {
 
 template <>
-class EnumInfo<{{name}}> {
- public:
-  // to_string(constant) returns a string representation of the enum constant
-  // and it takes O(1)
-  static ExpectedString to_string(const {{name}} constant) {
-    if (_constants.count(constant) != 0)
-      return _constants.at(constant);
+struct TypeActions<{{name}}> {
 
-    return Error("Cannot find the constant");
+  static TypeInfo reflect(void* value, bool is_const) {
+
+    //clang-format off
+    static constexpr ConstexprMap<{{name}}, {{length(__enums)}}> constants = {{{
+        {% for item in __fields -%}
+        {{"{"}}{{name}}::{{item}}, "{{item}}"},
+        {%- endfor -%}
+    }}};
+    //clang-format on
+
+    return Enum(static_cast<{{name}}*>(value), is_const, constants);
   }
-
-  // parse(name) returns an enum constant appropriate for the name
-  // and it takes O(n)
-  static Expected<{{name}}, Error> parse(std::string_view name) {
-
-    for (auto&& item : _constants) {
-      if (item.second == name)
-        return item.first;
-    }
-
-    return Error("Cannot parse the constant");
-  }
-
- private:
-  static constexpr frozen::unordered_map<TheEnumClass, std::string_view, {{length(enums)}}> _constants = {
-    {% for item in enums -%}
-    {%- if not loop.is_last -%}
-      {{"{"}}{{name}}::{{item}}, "{{item}}"},
-    {% else -%}
-      {{"{"}}{{name}}::{{item}}, "{{item}}"}};
-    {%- endif -%}
-    {%- endfor -%}
 };
+
+template <>
+TypeId TypeId::get({{name}}* /*unused*/) {
+  static TypeId id(TheGreatTable::record(Actions(&TypeActions<{{name}}>::reflect,          //
+                                                 &CommonActions<{{name}}>::type_name,      //
+                                                 &CommonActions<{{name}}>::type_size,      //
+                                                 &CommonActions<{{name}}>::alloc_default,  //
+                                                 &CommonActions<{{name}}>::call_delete,    //
+                                                 &CommonActions<{{name}}>::copy,           //
+                                                 &CommonActions<{{name}}>::copy_default)));
+  return id;
+}
+
+}  // namespace rr
