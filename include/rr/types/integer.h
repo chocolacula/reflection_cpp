@@ -21,11 +21,12 @@ struct IntActions {
 template <typename T>
 typename std::enable_if_t<std::is_integral_v<T>, TypeId>  //
 TypeId::get(T* ptr) {
-  static TypeId id(TheGreatTable::record(Actions(&IntActions<T, std::is_signed_v<T>>::reflect,  //
-                                                 &CommonActions<T>::type_name,                  //
-                                                 &CommonActions<T>::type_size,                  //
-                                                 &CommonActions<T>::call_new,                   //
-                                                 &IntActions<T, std::is_signed_v<T>>::call_delete)));
+  static TypeId id(TheGreatTable::record(Actions(&IntActions<T, std::is_signed_v<T>>::reflect,      //
+                                                 &CommonActions<T>::type_name,                      //
+                                                 &CommonActions<T>::type_size,                      //
+                                                 &CommonActions<T>::call_new,                       //
+                                                 &IntActions<T, std::is_signed_v<T>>::call_delete,  //
+                                                 &CommonActions<T>::copy)));
   return id;
 }
 

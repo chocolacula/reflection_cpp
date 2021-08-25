@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include <unordered_map>
+#include <map>
 #include <utility>
 
 #include "../../../expected.h"
@@ -13,19 +13,7 @@ namespace rr {
 /// just a registry of types and value pointers
 struct Object {
 
-  Object(Var var, std::unordered_map<std::string_view, Var>&& fields) : _fields(fields), _var(var) {
-  }
-
-  Object(const Object& other)
-      : _fields(other._fields), _var(other._var.raw_mut(), other._var.type(), other._var.is_const()) {
-  }
-
-  Object(Object&& other)
-      : _fields(std::move(other._fields)), _var(other._var.raw_mut(), other._var.type(), other._var.is_const()) {
-  }
-
-  ~Object() {
-    std::cout << "pizdec";
+  Object(Var var, std::map<std::string_view, Var>&& fields) : _fields(fields), _var(var) {
   }
 
   Expected<Var> get_field(std::string_view name) {
@@ -38,7 +26,7 @@ struct Object {
     return Error(format("There is no field with name: {}", name));
   }
 
-  const std::unordered_map<std::string_view, Var>& get_all_fields() const {
+  const std::map<std::string_view, Var>& get_all_fields() const {
 
     return _fields;
   }
@@ -48,7 +36,7 @@ struct Object {
   }
 
  private:
-  std::unordered_map<std::string_view, Var> _fields;
+  std::map<std::string_view, Var> _fields;
   Var _var;
 };
 

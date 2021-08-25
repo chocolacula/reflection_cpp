@@ -20,11 +20,12 @@ struct TheGreatTable {
 
  private:
   // zero index for unknown type
-  static inline std::vector<Actions> _data = {Actions(&UnknownActions::reflect,    //
-                                                      &UnknownActions::type_name,  //
-                                                      &UnknownActions::type_size,  //
-                                                      &UnknownActions::call_new,   //
-                                                      &UnknownActions::call_delete)};
+  static inline std::vector<Actions> _data = {Actions(&UnknownActions::reflect,      //
+                                                      &UnknownActions::type_name,    //
+                                                      &UnknownActions::type_size,    //
+                                                      &UnknownActions::call_new,     //
+                                                      &UnknownActions::call_delete,  //
+                                                      &UnknownActions::copy)};
 };
 
 }  // namespace rr

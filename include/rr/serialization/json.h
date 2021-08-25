@@ -1,9 +1,45 @@
 #pragma once
 
+#include <istream>
+
 #include "../expected.h"
 #include "../reflection/reflection.h"
+#include "parsing/parser_json.h"
 
-namespace rr::json {
+namespace rr::serialization::json {
+
+template <typename T>
+static Expected<T> from_string(std::string_view str) {
+  ParserJson parser(str.data(), str.size());
+
+  T obj;
+  auto info = Reflection::reflect(&obj);
+  parser.deserialize(&info);
+
+  return obj;
+}
+
+template <typename T>
+static Expected<T> from_stream(std::istream& stream) {
+  ParserJson parser(stream);
+
+  T obj;
+  auto info = Reflection::reflect(&obj);
+  parser.deserialize(info);
+
+  return obj;
+}
+
+static void serialize(const TypeInfo& info, std::string* result);
+
+template <typename T>
+static Expected<std::string> to_string(const T& obj) {
+  auto info = Reflection::reflect(obj);
+
+  std::string result;
+  serialize(info, &result);
+  return result;
+}
 
 static void serialize(const TypeInfo& info, std::string* result) {
   info.match(
@@ -79,18 +115,4 @@ static void serialize(const TypeInfo& info, std::string* result) {
       });
 }
 
-template <typename T>
-static Expected<T> from_string(std::string_view str) {
-  // TODO implement
-}
-
-template <typename T>
-static Expected<std::string> to_string(const T& obj) {
-  auto info = Reflection::reflect(obj);
-
-  std::string result;
-  serialize(info, &result);
-  return result;
-}
-
-}  // namespace rr::json
+}  // namespace rr::serialization::json

@@ -27,11 +27,12 @@ struct TypeActions<Bicycle> {
 
 template <>
 TypeId TypeId::get(Bicycle* /*unused*/) {
-  static TypeId id(TheGreatTable::record(Actions(&TypeActions<Bicycle>::reflect,      //
-                                                 &CommonActions<Bicycle>::type_name,  //
-                                                 &CommonActions<Bicycle>::type_size,  //
-                                                 &CommonActions<Bicycle>::call_new,   //
-                                                 &CommonActions<Bicycle>::call_delete)));
+  static TypeId id(TheGreatTable::record(Actions(&TypeActions<Bicycle>::reflect,        //
+                                                 &CommonActions<Bicycle>::type_name,    //
+                                                 &CommonActions<Bicycle>::type_size,    //
+                                                 &CommonActions<Bicycle>::call_new,     //
+                                                 &CommonActions<Bicycle>::call_delete,  //
+                                                 &CommonActions<Bicycle>::copy)));
   return id;
 }
 

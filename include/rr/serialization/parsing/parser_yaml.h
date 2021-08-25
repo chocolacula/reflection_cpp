@@ -6,8 +6,9 @@
 #include "../../variable/box.h"
 #include "lexers/compiled/lexer_yaml.yy.h"
 
-class ParserYaml : public LexerYaml {
+namespace rr {
 
+class ParserYaml : public LexerYaml {
  public:
   ParserYaml(const char* input, size_t input_size) : LexerYaml(reflex::Input(input, input_size)), _token(lex()) {
   }
@@ -15,7 +16,7 @@ class ParserYaml : public LexerYaml {
   ParserYaml(std::istream& stream) : LexerYaml(stream), _token(lex()) {
   }
 
-  void deserialize(rr::TypeInfo* info) {
+  void deserialize(TypeInfo* info) {
     while (true) {
 
       if (_token == 'S') {
@@ -29,14 +30,9 @@ class ParserYaml : public LexerYaml {
   }
 
  private:
-  void parse(rr::TypeInfo* info) {
+  void parse(TypeInfo* info) {
     if (is_new_line(_token))
       next();
-
-    if (_token == '!') {
-      _tag = string;
-      next();
-    }
 
     // anchors support
     if (_token == '&') {
@@ -76,46 +72,9 @@ class ParserYaml : public LexerYaml {
         break;
     }
   }
-  /*
-    void parse_by_type(rr::TypeInfo* info) {
-      info->match(
-          [this](rr::Object& o) {
-            next_scalar();
-            auto field_name = _lexer.string;
-            auto field_info = rr::Reflection::reflect(o.get_field(field_name).unwrap());
-            parse(&field_info);
-          },                       //
-          [](rr::Array& a) {},     //
-          [](rr::Sequence& s) {},  //
-          [](rr::Map& m) {},       //
-          [this, info](auto&& other) { parse_scalar(info); });
-    }
 
-    void parse_scalar(rr::TypeInfo* info) {
-      info->match(
-          [this](rr::Bool& b) {
-            std::transform(_lexer.string.begin(), _lexer.string.end(), _lexer.string.begin(), std::towlower);
-
-            if (_lexer.string == "false" ||  //
-                _lexer.string == "n" ||      //
-                _lexer.string == "no" ||     //
-                _lexer.string == "off") {
-              b.set(false);
-            } else {
-              b.set(true);
-            }
-          },
-          [this](rr::Integer& i) { i.set(std::stoi(_lexer.string)); },  //
-          [this](rr::Float& f) { f.set(std::stod(_lexer.string)); },    //
-          [this](rr::String& s) { s.set(_lexer.string); },              //
-          [this](rr::Enum& e) { e.parse(_lexer.string); },              //
-          [this](auto&&) {  });
-
-      next();
-    }
-  */
   // parse "? key : val ..."
-  void parse_key(rr::TypeInfo* info) {
+  void parse_key(TypeInfo* info) {
     next();
     if (_token == ';' || _token == '=') {
       next();
@@ -132,10 +91,7 @@ class ParserYaml : public LexerYaml {
   }
 
   // parse "- val ..."
-  void parse_seq(rr::TypeInfo* info) {
-    // if (_tag.empty()) {
-    //   _tag = "!!seq";
-    // }
+  void parse_seq(TypeInfo* info) {
     size_t level = 0;
     while (true) {
       if (_token == '>') {
@@ -158,18 +114,18 @@ class ParserYaml : public LexerYaml {
       next();
 
       // TODO handle Array too
-      auto nested_type = info->get<rr::Sequence>().nested_type();
-      rr::Box box(nested_type);
+      auto nested_type = info->get<Sequence>().nested_type();
+      Box box(nested_type);
 
-      auto new_info = rr::Reflection::reflect(box.var());
+      auto new_info = Reflection::reflect(box.var());
       parse(&new_info);
 
-      info->get<rr::Sequence>().push(box.var());
+      info->get<Sequence>().push(box.var());
     }
   }
 
   // parse indented value (string, nested sequence, or nested map)
-  void parse_ind(rr::TypeInfo* info) {
+  void parse_ind(TypeInfo* info) {
     next();
     if (_token == '-') {
       parse_seq(info);
@@ -223,13 +179,10 @@ class ParserYaml : public LexerYaml {
   }
 
   // parse string
-  void parse_str() {  // rr::TypeInfo* info) {
-    /*if (_tag.empty()) {
-      _tag = "!!str";
-    }
-
+  void parse_str() {  // TypeInfo* info) {
+    /*
     info->match(
-        [this](rr::Bool& b) {
+        [this](Bool& b) {
           std::transform(string.begin(), string.end(), string.begin(), std::towlower);
           if (string == "false" || string == "no" || string == "n" || string == "off") {
             b.set(false);
@@ -237,10 +190,10 @@ class ParserYaml : public LexerYaml {
             b.set(true);
           }
         },
-        [this](rr::Integer& i) { i.set(std::stoi(string)); },  //
-        [this](rr::Float& f) { f.set(std::stod(string)); },    //
-        [this](rr::String& s) { s.set(string); },              //
-        [this](rr::Enum& e) { e.parse(string); },              //
+        [this](Integer& i) { i.set(std::stoi(string)); },  //
+        [this](Float& f) { f.set(std::stod(string)); },    //
+        [this](String& s) { s.set(string); },              //
+        [this](Enum& e) { e.parse(string); },              //
         [this](auto&&) {});*/
 
     next();
@@ -250,25 +203,22 @@ class ParserYaml : public LexerYaml {
   }
 
   // parse string of "key: val ..."
-  void parse_str_or_map(rr::TypeInfo* info) {
-    // if (_tag.empty())
-    // _tag = "!!str";
-    // data.str = string;
+  void parse_str_or_map(TypeInfo* info) {
     next();
 
     if (_token == ':') {
       // it is a map
       parse_map(info);
     } else if (is_new_line(_token) || is_end(_token)) {
-      info->get<rr::String>().set(string);
+      info->get<String>().set(string);
       next();
     }
   }
 
   // key is given in data, now parse ": val ..."
-  void parse_map(rr::TypeInfo* info) {
-    auto field_var = info->get<rr::Object>().get_field(string).unwrap();
-    auto field_info = rr::Reflection::reflect(field_var);
+  void parse_map(TypeInfo* info) {
+    auto field_var = info->get<Object>().get_field(string).unwrap();
+    auto field_info = Reflection::reflect(field_var);
 
     next();
 
@@ -284,14 +234,13 @@ class ParserYaml : public LexerYaml {
 
       parse(&field_info);
     }
-    // _tag = "!!map";
 
     // add all other keys and values
     while (_token != 'S' && _token != 0 && _token != 'E' && _token != '<') {
       // YAML key, val;
       std::string key;
 
-      if (_token == ';' || _token == '=') {
+      if (is_new_line(_token)) {
         next();
       }
 
@@ -306,8 +255,8 @@ class ParserYaml : public LexerYaml {
           if (_token == '-') {
 
             key = string;
-            field_var = info->get<rr::Object>().get_field(key).unwrap();
-            auto s_info = rr::Reflection::reflect(field_var);
+            field_var = info->get<Object>().get_field(key).unwrap();
+            auto s_info = Reflection::reflect(field_var);
 
             parse_seq(&s_info);
           } else if (_token == '>') {
@@ -321,9 +270,10 @@ class ParserYaml : public LexerYaml {
         }
       }
 
+      // get value
       if (_token == ':') {
-        field_var = info->get<rr::Object>().get_field(key).unwrap();
-        auto f_info = rr::Reflection::reflect(field_var);
+        field_var = info->get<Object>().get_field(key).unwrap();
+        auto f_info = Reflection::reflect(field_var);
 
         next();
         if (_token == ';' || _token == '=') {
@@ -343,15 +293,11 @@ class ParserYaml : public LexerYaml {
       } else {
         break;
       }
-      // data.map.push_back(YAML::Duo(key, val));
     }
   }
 
   // parse "[ val, ... ]"
-  void parse_flow_seq(rr::TypeInfo* info) {
-    if (_tag.empty()) {
-      _tag = "!!seq";
-    }
+  void parse_flow_seq(TypeInfo* info) {
     size_t level = 0;
     next();
     while (_token != 0 && _token != 'S' && _token != 'E' && _token != ']') {
@@ -411,10 +357,7 @@ class ParserYaml : public LexerYaml {
   }
 
   // parse "{ key:val, ... }"
-  void parse_flow_map(rr::TypeInfo* info) {
-    if (_tag.empty()) {
-      _tag = "!!map";
-    }
+  void parse_flow_map(TypeInfo* info) {
     size_t level = 0;
     next();
     while (_token != 0 && _token != 'S' && _token != 'E' && _token != '}') {
@@ -485,12 +428,6 @@ class ParserYaml : public LexerYaml {
     return _token;
   }
 
-  void next_scalar() {
-    while (!is_end(_token) || _token != '$') {
-      _token = lex();
-    }
-  }
-
   static inline bool is_end(int token) {
     return token == 0 || token == 'E';
   }
@@ -500,7 +437,7 @@ class ParserYaml : public LexerYaml {
   }
 
   int _token;
-  std::string _tag;
-
-  std::unordered_map<std::string, rr::Var> _anchors;
+  std::unordered_map<std::string, Var> _anchors;
 };
+
+}  // namespace rr

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstddef>
+#include <cstring>
+
 #include "../../reflection/the_great_table.h"
 #include "../type_actions.h"
 
@@ -35,15 +38,20 @@ struct TypeActions<T[size_v]> {
       delete[] static_cast<T*>(pointer);
     }
   }
+
+  static void copy(void* to, const void* from) {
+    std::memcpy(to, from, size_v);
+  }
 };
 
 template <typename T, size_t size_v>
 TypeId TypeId::get(T (*)[size_v]) {
-  static TypeId id(TheGreatTable::record(Actions(&TypeActions<T[size_v]>::reflect,    //
-                                                 &TypeActions<T[size_v]>::type_name,  //
-                                                 &TypeActions<T[size_v]>::type_size,  //
-                                                 &TypeActions<T[size_v]>::call_new,   //
-                                                 &TypeActions<T[size_v]>::call_delete)));
+  static TypeId id(TheGreatTable::record(Actions(&TypeActions<T[size_v]>::reflect,      //
+                                                 &TypeActions<T[size_v]>::type_name,    //
+                                                 &TypeActions<T[size_v]>::type_size,    //
+                                                 &TypeActions<T[size_v]>::call_new,     //
+                                                 &TypeActions<T[size_v]>::call_delete,  //
+                                                 &TypeActions<T[size_v]>::copy)));
   return id;
 }
 

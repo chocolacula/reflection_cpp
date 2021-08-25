@@ -1,5 +1,6 @@
 // A fast YAML 1.2 parser and writer
 // Written by Robert van Engelen
+// Edited by Maxim Voloshin
 //
 // https://yaml.org/spec/1.2/spec.html
 //
@@ -39,7 +40,7 @@
 %option lexer=LexerYaml
 
 %top{
-  #include <stdlib.h> // strtoul()
+  #include <cstdlib.h> // strtoul()
   #include <iostream> // std::cout etc.
   #include <iomanip>  // std::setw
   #include <vector>   // to store YAML containers

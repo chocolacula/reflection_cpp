@@ -11,12 +11,14 @@ struct Actions {
                     std::string_view (*get_name)(),    //
                     size_t (*size)(),                  //
                     void* (*call_new)(void*, size_t),  //
-                    void (*call_delete)(void*, bool))
+                    void (*call_delete)(void*, bool),  //
+                    void (*copy)(void*, const void*))
       : reflect(reflect),     //
         type_name(get_name),  //
         type_size(size),      //
         call_new(call_new),   //
-        call_delete(call_delete) {
+        call_delete(call_delete),
+        copy(copy) {
   }
 
   constexpr Actions(const Actions& other) = default;
@@ -29,6 +31,7 @@ struct Actions {
   size_t (*type_size)();
   void* (*call_new)(void*, size_t);
   void (*call_delete)(void*, bool);
+  void (*copy)(void*, const void*);
 };
 
 }  // namespace rr

@@ -20,7 +20,6 @@ include_directories(tclap/include)
 include_directories(RE-flex/include)
 link_directories(RE-flex/lib)
 
-
 set(SOURCES
         # parsing/lexers/compiled/cpp_source.yy.cpp
         # parsing/lexers/compiled/json.yy.cpp

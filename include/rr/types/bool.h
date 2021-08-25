@@ -23,7 +23,8 @@ TypeId TypeId::get(bool* /*unused*/) {
                                                  &CommonActions<bool>::type_name,  //
                                                  &CommonActions<bool>::type_size,  //
                                                  &CommonActions<bool>::call_new,   //
-                                                 &BoolActions::call_delete)));
+                                                 &BoolActions::call_delete,        //
+                                                 &CommonActions<bool>::copy)));
   return id;
 }
 

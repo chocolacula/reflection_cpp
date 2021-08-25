@@ -7,7 +7,7 @@
 
 #include "config.h"
 #include "rr/reflection/printer.h"
-#include "rr/serializer/parsing/parser_yaml.h"
+#include "rr/serialization/yaml.h"
 #include "rr/tools/format.h"
 #include "self_generated/reflection.h"
 #include "tclap/CmdLine.h"
@@ -46,11 +46,7 @@ int main(int argc, const char** argv) {
     return -1;
   }
 
-  Config config;
-  auto conf_info = rr::Reflection::reflect(&config);
-
-  ParserYaml yaml(input);
-  yaml.deserialize(&conf_info);
+  auto conf = rr::serialization::json::from_stream<Config>(input).unwrap();
 
   // std::string word;
   // while (input >> word) {

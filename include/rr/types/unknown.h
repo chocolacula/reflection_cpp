@@ -22,7 +22,11 @@ struct UnknownActions {
   }
 
   static void call_delete(void* pointer, bool in_place) {
-    throw std::runtime_error("Cannot delete a value for unknown type");
+    throw std::runtime_error("Cannot delete a value with unknown type");
+  }
+
+  static void copy(void* to, const void* from) {
+    throw std::runtime_error("Cannot copy a value with unknown type");
   }
 
   // other types are self registering in The Great Table in the same place of a file

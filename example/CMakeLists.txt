@@ -9,7 +9,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/output)
 
 include_directories(../include)
-include_directories(../generator/inja/third_party/include)
+
+include_directories(../generator/RE-flex/include)
+link_directories(../generator/RE-flex/lib)
 
 set(SOURCES
     main.cpp)
@@ -22,3 +24,5 @@ set(SOURCES
 # )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
+
+target_link_libraries(${PROJECT_NAME} libreflex.a)

@@ -3,9 +3,10 @@
 #include <utility>
 
 #include "handwritten/reflection.h"
+#include "object.h"
 #include "print.h"
 #include "rr/reflection/printer.h"
-#include "rr/serializer/json.h"
+#include "rr/serialization/json.h"
 
 using namespace rr;
 
@@ -84,22 +85,17 @@ int main() {
   println("\n{}", Reflection::sprint(bicycle_info));
 
   // and for a sweet one you can serialize to struct and vice vera
-  // auto input = nlohmann::json::parse(R"({ "host": "google.com", "server_port": 5000, "timeout": 10 })");
-  // SerializerNlohmannJson input_adapter(&input);
+  auto str =
+      "{\"weight\":16.400000,"
+      "\"model\":\"Aurum\","
+      "\"colors\":[\"kGray\",\"kGreen\"],"
+      "\"wheel_size\":27.500000,"
+      "\"manufacturer\":\"Norco\","
+      "\"is_hardtail\":false,"
+      "\"id\":17893448}";
 
-  Bicycle norco_aurum;
-  norco_aurum.id = 17893448;
-  norco_aurum.is_hardtail = false;
-  norco_aurum.manufacturer = "Norco";
-  norco_aurum.model = "Aurum";
-  norco_aurum.wheel_size_inch = 27.5;
-  norco_aurum.frame_weight = 16.4;
-  norco_aurum.colors = {Colors::kGray, Colors::kGreen};
-
+  auto norco_aurum = serialization::json::from_string<Bicycle>(str).unwrap();
   Reflection::print(&norco_aurum);
-  println();
-
-  std::cout << json::to_string(&gt_avalanche).unwrap() << std::endl;
 
   return 0;
 }

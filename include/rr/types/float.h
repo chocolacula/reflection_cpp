@@ -21,11 +21,12 @@ struct FloatActions {
 template <typename T>
 typename std::enable_if_t<std::is_floating_point_v<T>, TypeId>  //
 TypeId::get(T* ptr) {
-  static TypeId id(TheGreatTable::record(Actions(&FloatActions<T>::reflect,     //
-                                                 &CommonActions<T>::type_name,  //
-                                                 &CommonActions<T>::type_size,  //
-                                                 &CommonActions<T>::call_new,   //
-                                                 &FloatActions<T>::call_delete)));
+  static TypeId id(TheGreatTable::record(Actions(&FloatActions<T>::reflect,      //
+                                                 &CommonActions<T>::type_name,   //
+                                                 &CommonActions<T>::type_size,   //
+                                                 &CommonActions<T>::call_new,    //
+                                                 &FloatActions<T>::call_delete,  //
+                                                 &CommonActions<T>::copy)));
   return id;
 }
 

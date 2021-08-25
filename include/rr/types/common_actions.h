@@ -34,6 +34,10 @@ struct CommonActions {
       delete static_cast<T*>(pointer);
     }
   }
+
+  static void copy(void* to, const void* from) {
+    *static_cast<T*>(to) = *static_cast<const T*>(from);
+  }
 };
 
 }  // namespace rr

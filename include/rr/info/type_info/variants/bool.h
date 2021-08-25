@@ -4,6 +4,8 @@
 #include <cctype>
 #include <string_view>
 
+#include "../../../expected.h"
+
 namespace rr {
 
 struct Bool {
@@ -14,18 +16,16 @@ struct Bool {
     return *_value;
   }
 
-  void set(bool value) {
+  Expected<None> set(bool value) {
+    if (_is_const) {
+      return Error("Trying to set const value");
+    }
     *_value = value;
+    return None();
   }
 
   std::string_view to_string() const {
     return *_value ? "true" : "false";
-  }
-
-  void parse(std::string_view str) {
-    std::string low(str);
-    std::transform(low.begin(), low.end(), low.begin(), [](char c) -> char { return std::tolower(c); });
-    *_value = str == "true";
   }
 
  private:

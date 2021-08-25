@@ -39,4 +39,15 @@ void call_delete(Var variable, bool in_place) {
   TheGreatTable::data()[variable.type().number()].call_delete(variable.raw_mut(), in_place);
 }
 
+Expected<None> copy(Var to, Var from) {
+  if (to.is_const()) {
+    return Error("Cannot assign to const value");
+  }
+  if (to.type() != from.type()) {
+    return Error(format("Cannot copy {} to {}", type_name(from.type()), type_name(to.type())));
+  }
+  TheGreatTable::data()[to.type().number()].copy(to.raw_mut(), from.raw());
+  return None();
+}
+
 }  // namespace rr::Reflection

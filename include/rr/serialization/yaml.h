@@ -1,11 +1,46 @@
 #pragma once
 
+#include <istream>
+
 #include "../expected.h"
 #include "../reflection/printer.h"
 #include "../reflection/reflection.h"
-#include "parsing/yaml.h"
+#include "parsing/parser_yaml.h"
 
-namespace rr::yaml {
+namespace rr::serialization::yaml {
+
+template <typename T>
+static Expected<T> from_string(std::string_view str) {
+  ParserYaml parser(str.data(), str.size());
+
+  T obj;
+  auto info = Reflection::reflect(&obj);
+  parser.deserialize(info);
+
+  return obj;
+}
+
+template <typename T>
+static Expected<T> from_stream(std::istream& stream) {
+  ParserYaml parser(stream);
+
+  T obj;
+  auto info = Reflection::reflect(&obj);
+  parser.deserialize(&info);
+
+  return obj;
+}
+
+static void serialize(const TypeInfo& info, std::string* result);
+
+template <typename T>
+static Expected<std::string> to_string(const T& obj) {
+  auto info = Reflection::reflect(obj);
+
+  std::string result;
+  serialize(info, &result);
+  return result;
+}
 
 static void serialize(const TypeInfo& info, std::string* result) {
   info.match(
@@ -81,24 +116,4 @@ static void serialize(const TypeInfo& info, std::string* result) {
       });
 }
 
-template <typename T>
-static Expected<T> from_string(std::string_view str) {
-  ParserYaml parser(str.data(), str.size());
-
-  T obj;
-  auto info = Reflection::reflect(&obj);
-  parser.deserialize(info);
-
-  return obj;
-}
-
-template <typename T>
-static Expected<std::string> to_string(const T& obj) {
-  auto info = Reflection::reflect(obj);
-
-  std::string result;
-  serialize(info, &result);
-  return result;
-}
-
-}  // namespace rr::yaml
+}  // namespace rr::serialization::yaml
