@@ -97,5 +97,10 @@ int main() {
   auto norco_aurum = serialization::json::from_string<Bicycle>(str).unwrap();
   Reflection::print(&norco_aurum);
 
+  auto m_str = "[{\"key\":\"atata\",\"val\":666},{\"key\":\"ololo\",\"val\":555}]";
+  auto m = serialization::json::from_string<std::map<std::string, int>>(m_str).unwrap();
+
+  println(serialization::json::to_string(&m).unwrap());
+
   return 0;
 }

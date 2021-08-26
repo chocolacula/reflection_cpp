@@ -14,9 +14,8 @@ struct Error {
   explicit Error(std::string&& message) : _data(std::move(message)) {
   }
 
-  Error(const Error& other) noexcept
-    : _data(other._data)
-  {}
+  Error(const Error& other) noexcept : _data(other._data) {
+  }
 
   Error& operator=(const Error& other) {
     if (this == &other) {
@@ -28,9 +27,8 @@ struct Error {
     return *this;
   }
 
-  Error(Error&& other) noexcept
-    : _data(std::move(other._data))
-  {}
+  Error(Error&& other) noexcept : _data(std::move(other._data)) {
+  }
 
   Error& operator=(Error&& other) noexcept {
     if (this == &other) {
@@ -59,10 +57,9 @@ struct Error {
   TightString _data;
 };
 
-std::ostream& operator<<(std::ostream& os, const Error& err)
-{
-    os << err.what();
-    return os;
+std::ostream& operator<<(std::ostream& os, const Error& err) {
+  os << err.what();
+  return os;
 }
 
 }  // namespace rr

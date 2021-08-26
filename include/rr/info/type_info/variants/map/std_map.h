@@ -17,6 +17,14 @@ struct StdMap final : public IMap {
     return Var(_map, TypeId::get(_map), _is_const);
   }
 
+  TypeId key_type() const override {
+    return TypeId::get<KeyT>();
+  }
+
+  TypeId val_type() const override {
+    return TypeId::get<ValueT>();
+  }
+
   void for_each(std::function<void(Var, Var)> callback) const override {
     auto value_type = TypeId::get<ValueT>();
 
@@ -54,7 +62,7 @@ struct StdMap final : public IMap {
 
     auto r = _map->insert(std::make_pair(*k.unwrap(), *v.unwrap()));
 
-    if (r.second() != true) {
+    if (r.second != true) {
       return Error("The pair of key and value does already exist");
     }
 

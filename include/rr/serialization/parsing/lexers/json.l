@@ -2,24 +2,16 @@
 // Written by Robert van Engelen
 // Edited by Maxim Voloshin
 //
-// Passes tests suggested by <http://seriot.ch/parsing_json.php>
-//
-// This example demonstrates:
-// 1.  %o flex compatible actions yytext and BEGIN
-// 2.  %o freespace to space regular expressions between concat and alternations
-// 3.  %o dotall mode: . matches \n
-// 4.  %o unicode mode: . mathes any Unicode character
-// 5.  %x STRING state with rules to convert a JSON string to std::wstring
-// 6.  \p{Non_ASCII_Unicode} matches any non-ASCII Unicode character
-// 7.  JSON value types are indicated with tokens '0', 't', 'f', '#', '$'
-// 8.  C++ yyFlexLexer class members to store lexer values (MT-safe)
-// 9.  JSONParser is a recursive descent parser for JSON
-// 10. JSONParser inherits yyFlexLexer, for yyFlexLexer::yylex() and lexer state
-// 11. JSONParser recurses 100 levels deep max (MAXLEVEL)
-// 12. JSONParser accepts 1000 items per array/object max (MAXSIZE)
-// 13. main() reads a FILE* for automatic UTF-16/32 normalization to UTF-8
-// 14. JSON class stores parsed JSON data
-// 15. JSON class instances are writable to std::ostream
+// . %o freespace to space regular expressions between concat and alternations
+// . %o dotall mode: . matches \n
+// . %o unicode mode: . mathes any Unicode character
+// . %x STRING state with rules to convert a JSON string to std::wstring
+// . \p{Non_ASCII_Unicode} matches any non-ASCII Unicode character
+// . JSON value types are indicated with tokens '0', 't', 'f', '#', '$'
+// . JSONParser is a recursive descent parser for JSON
+// . JSONParser inherits yyFlexLexer, for yyFlexLexer::yylex() and lexer state
+// . JSONParser recurses 100 levels deep max (MAXLEVEL)
+// . JSONParser accepts 1000 items per array/object max (MAXSIZE)
 
 %option lexer=LexerJson
 
@@ -27,12 +19,16 @@
   #include <cstdlib>  // strtoul(), strtod()
   #include <iostream> // std::cout etc.
   #include <iomanip>  // std::setw
-  #include <vector>   // to store JSON arrays
-  #include <map>      // to store JSON objects
+
+  #include "../../../../error/position.h"
 }
 
-// define yyFlexLexer class variables to collect values in the lexer rules
 %class{
+ public:
+  rr::Position get_position() {
+    return rr::Position{column: columno(), line_number: lineno()};
+  }
+
  protected:
   std::string string; // token value for token '$' (string)
 }

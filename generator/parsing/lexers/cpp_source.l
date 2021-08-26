@@ -10,11 +10,11 @@
 
 %class{
  public:
-  Position get_position() {
-    return Position{column: columno(), line_number: lineno()};
+  rr::Position get_position() {
+    return rr::Position{column: columno(), line_number: lineno()};
   }
 
-  bool is_equal(const char * str) {
+  bool is_equal(const char* str) {
     return strcmp(text(), str) == 0;
   }
 %}

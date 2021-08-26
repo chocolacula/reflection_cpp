@@ -9,24 +9,28 @@
 namespace rr::serialization::json {
 
 template <typename T>
-static Expected<T> from_string(std::string_view str) {
+static Expected<T, ErrorParse> from_string(std::string_view str) {
   ParserJson parser(str.data(), str.size());
 
   T obj;
   auto info = Reflection::reflect(&obj);
-  parser.deserialize(&info);
-
+  auto exp = parser.deserialize(&info);
+  if (exp.is_error()) {
+    return exp.template get<ErrorParse>();
+  }
   return obj;
 }
 
 template <typename T>
-static Expected<T> from_stream(std::istream& stream) {
+static Expected<T, ErrorParse> from_stream(std::istream& stream) {
   ParserJson parser(stream);
 
   T obj;
   auto info = Reflection::reflect(&obj);
-  parser.deserialize(info);
-
+  auto exp = parser.deserialize(&info);
+  if (exp.is_error()) {
+    return exp.template get<ErrorParse>();
+  }
   return obj;
 }
 
@@ -75,11 +79,11 @@ static void serialize(const TypeInfo& info, std::string* result) {
         *result += '"';
       },
       [result](const Map& m) {
-        *result += '{';
+        *result += '[';
 
         m.for_each([result](Var key, Var value) {
           auto key_info = Reflection::reflect(key);
-          *result += "\"key\":";
+          *result += "{\"key\":";
           serialize(key_info, result);
 
           *result += ',';
@@ -88,13 +92,13 @@ static void serialize(const TypeInfo& info, std::string* result) {
           *result += "\"val\":";
           serialize(value_info, result);
 
-          *result += ',';
+          *result += "},";
         });
 
         if ((*result)[result->size() - 1] == ',') {
-          (*result)[result->size() - 1] = '}';
+          (*result)[result->size() - 1] = ']';
         } else {
-          *result += '}';
+          *result += ']';
         }
       },
       [result](const auto& as) {  // Array or Sequence

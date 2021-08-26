@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdexcept>
+#include <type_traits>
 #include <variant>
 
 #include "overloaded.h"
@@ -13,17 +14,22 @@ using None = std::monostate;
 template <typename... T>
 struct Variant {
 
-  template <typename SomeT>
+  template <typename SomeT, typename = std::enable_if_t<!std::is_same_v<SomeT, Variant>, void>>
   Variant(const SomeT& value) : _content(value) {  // NOLINT implicit constructor
   }
 
-  template <typename SomeT>
+  template <typename SomeT, typename = std::enable_if_t<!std::is_same_v<SomeT, Variant>, void>>
   Variant(SomeT&& value) : _content(std::move(value)) {  // NOLINT implicit constructor
   }
 
   template <typename... FuncT>
   decltype(auto) match(FuncT... functions) {
     return std::visit(Overloaded{functions...}, _content);
+  }
+
+  template <typename... FuncT>
+  decltype(auto) match_move(FuncT... functions) {
+    return std::visit(Overloaded{functions...}, std::move(_content));
   }
 
   template <typename... FuncT>

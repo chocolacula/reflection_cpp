@@ -25,6 +25,14 @@ struct Map final : public IMap {
     return _map->own_var();
   }
 
+  TypeId key_type() const override {
+    return _map->key_type();
+  }
+
+  TypeId val_type() const override {
+    return _map->val_type();
+  }
+
   void for_each(std::function<void(Var, Var)> callback) const override {
     return _map->for_each(callback);
   }

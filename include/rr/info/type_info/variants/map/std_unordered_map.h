@@ -17,6 +17,14 @@ struct StdUnorderedMap final : public IMap {
     return Var(_map, TypeId::get(_map), _is_const);
   }
 
+  TypeId key_type() const override {
+    return TypeId::get<KeyT>();
+  }
+
+  TypeId val_type() const override {
+    return TypeId::get<ValueT>();
+  }
+
   void for_each(std::function<void(Var, Var)> callback) const override {
     auto value_type = TypeId::get<ValueT>();
 
