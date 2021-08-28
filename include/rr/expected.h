@@ -33,13 +33,15 @@ struct Expected : public BASE {
     return BASE::template is<ErrorT>();
   }
 
-  T unwrap() {
-    auto pointer = std::get_if<T>(&(BASE::_content));
+  ErrorT error() {
+    return std::get<ErrorT>(std::move(BASE::_content));
+  }
 
-    if (pointer == nullptr) {
-      throw std::runtime_error(std::get<ErrorT>(BASE::_content).what().data());
+  T unwrap() {
+    if (is_error()) {
+      throw std::runtime_error(error().what().data());
     }
-    return *pointer;
+    return std::get<T>(std::move(BASE::_content));
   }
 };
 

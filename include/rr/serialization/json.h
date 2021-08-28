@@ -9,27 +9,27 @@
 namespace rr::serialization::json {
 
 template <typename T>
-static Expected<T, ErrorParse> from_string(std::string_view str) {
+static Expected<T> from_string(std::string_view str) {
   ParserJson parser(str.data(), str.size());
 
   T obj;
   auto info = Reflection::reflect(&obj);
   auto exp = parser.deserialize(&info);
   if (exp.is_error()) {
-    return exp.template get<ErrorParse>();
+    return exp.error();
   }
   return obj;
 }
 
 template <typename T>
-static Expected<T, ErrorParse> from_stream(std::istream& stream) {
+static Expected<T> from_stream(std::istream& stream) {
   ParserJson parser(stream);
 
   T obj;
   auto info = Reflection::reflect(&obj);
   auto exp = parser.deserialize(&info);
   if (exp.is_error()) {
-    return exp.template get<ErrorParse>();
+    return exp.error();
   }
   return obj;
 }

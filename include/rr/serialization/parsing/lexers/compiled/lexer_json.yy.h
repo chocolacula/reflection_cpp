@@ -28,7 +28,7 @@
   #include <iostream> // std::cout etc.
   #include <iomanip>  // std::setw
 
-  #include "../../../../error/position.h"
+  #include "../../position.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////

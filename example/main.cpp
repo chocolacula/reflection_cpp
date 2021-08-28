@@ -44,7 +44,7 @@ int main() {
 
   println();
 
-  // it works for old plain enum type but in this case there isn't any generated code for TheEnum
+  // it works for old plain enum type but in this case there isn't any generated code for 'Animals'
   auto giraffe = Animals::kGiraffe;
   try {
     auto giraffe_info = Reflection::reflect(&giraffe);
@@ -97,7 +97,15 @@ int main() {
   auto norco_aurum = serialization::json::from_string<Bicycle>(str).unwrap();
   Reflection::print(&norco_aurum);
 
-  auto m_str = "[{\"key\":\"atata\",\"val\":666},{\"key\":\"ololo\",\"val\":555}]";
+  // even a map could be deserialized, it works with two fields by default:
+  // 'key' for a key
+  // 'val' for a value
+  // only two fields allowed, the order doesn't metter
+  // with special tag '!!map|key:val' in the start of a JSON array fields names could be implicitly specified
+  auto m_str =
+      "[\"!!map|game:price_usd\","
+      "{\"game\":\"Blasphemous\",\"price_usd\":34},"
+      "{\"price_usd\":60,\"game\":\"Call Of Duty\"}]";
   auto m = serialization::json::from_string<std::map<std::string, int>>(m_str).unwrap();
 
   println(serialization::json::to_string(&m).unwrap());
