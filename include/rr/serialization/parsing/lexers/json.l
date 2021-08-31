@@ -2,16 +2,15 @@
 // Written by Robert van Engelen
 // Edited by Maxim Voloshin
 //
-// . %o freespace to space regular expressions between concat and alternations
-// . %o dotall mode: . matches \n
-// . %o unicode mode: . mathes any Unicode character
-// . %x STRING state with rules to convert a JSON string to std::wstring
-// . \p{Non_ASCII_Unicode} matches any non-ASCII Unicode character
-// . JSON value types are indicated with tokens '0', 't', 'f', '#', '$'
-// . JSONParser is a recursive descent parser for JSON
-// . JSONParser inherits yyFlexLexer, for yyFlexLexer::yylex() and lexer state
-// . JSONParser recurses 100 levels deep max (MAXLEVEL)
-// . JSONParser accepts 1000 items per array/object max (MAXSIZE)
+// * %o freespace to space regular expressions between concat and alternations
+// * %o dotall mode: . matches \n
+// * %o unicode mode: . mathes any Unicode character
+// * %x STRING state with rules to convert a JSON string to std::wstring
+// * \p{Non_ASCII_Unicode} matches any non-ASCII Unicode character
+// * JSON value types are indicated with tokens '0', 't', 'f', '#', '$'
+// * JSONParser is a recursive descent parser for JSON
+// * JSONParser recurses 100 levels deep max (MAXLEVEL)
+// * JSONParser accepts 1000 items per array/object max (MAXSIZE)
 
 %option lexer=LexerJson
 

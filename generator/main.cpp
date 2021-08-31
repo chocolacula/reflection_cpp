@@ -46,7 +46,7 @@ int main(int argc, const char** argv) {
     return -1;
   }
 
-  auto conf = rr::serialization::json::from_stream<Config>(input).unwrap();
+  auto conf = rr::serialization::yaml::from_stream<Config>(input).unwrap();
 
   // std::string word;
   // while (input >> word) {

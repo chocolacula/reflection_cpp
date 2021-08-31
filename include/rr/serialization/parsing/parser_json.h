@@ -12,6 +12,7 @@
 
 #include "../../reflection/reflection.h"
 #include "../../variable/box.h"
+#include "define_retry.h"
 #include "lexers/compiled/lexer_json.yy.h"
 
 namespace rr {
@@ -21,7 +22,7 @@ class ParserJson : public LexerJson {
   ParserJson(const char* input, size_t input_size) : LexerJson(reflex::Input(input, input_size)), _level(0) {
   }
 
-  ParserJson(std::istream& stream) : LexerJson(stream), _level(0) {
+  explicit ParserJson(std::istream& stream) : LexerJson(stream), _level(0) {
   }
 
   Expected<None> deserialize(TypeInfo* info) {
@@ -30,10 +31,10 @@ class ParserJson : public LexerJson {
 
  private:
   Expected<None> parse_next(TypeInfo* info) {
-    return parse(info, lex());
+    return parse(info, next());
   }
 
-  Expected<None> parse(TypeInfo* info, int token) {
+  Expected<None> parse(TypeInfo* info, char token) {
     switch (token) {
       case '0':
         // do nothing
@@ -78,7 +79,7 @@ class ParserJson : public LexerJson {
       return error("Max depth level exceeded");
     }
 
-    int token = lex();
+    char token = next();
     if (token == ']') {
       // an empty array
       _level -= 1;
@@ -90,19 +91,16 @@ class ParserJson : public LexerJson {
       Box box(nested_type);
       auto boxed_info = Reflection::reflect(box.var());
 
-      auto exp = parse(&boxed_info, token)
-                     .match_move(
-                         [&, len](None&&) -> Expected<None> {
-                           add(len, box.var());
-                           return None();
-                         },
-                         [](Error&& err) -> Expected<None> { return err; });
+      auto ex = parse(&boxed_info, token)
+                    .match_move(
+                        [&, len](None&&) -> Expected<None> {
+                          add(len, box.var());
+                          return None();
+                        },
+                        [](Error&& err) -> Expected<None> { return err; });
+      __retry(ex);
 
-      if (exp.is_error()) {
-        return exp.error();
-      }
-
-      int token = lex();
+      char token = next();
       if (token == ']') {
         --_level;
         return None();
@@ -112,7 +110,7 @@ class ParserJson : public LexerJson {
       }
 
       // get another one
-      token = lex();
+      token = next();
     }
 
     return None();
@@ -132,7 +130,7 @@ class ParserJson : public LexerJson {
     }
 
     for (size_t len = 0; len < kMaxArr; ++len) {
-      int token = lex();
+      char token = next();
 
       if (len == 0 && token == '}') {
         --_level;
@@ -141,17 +139,14 @@ class ParserJson : public LexerJson {
       if (token != '$') {
         return error("Cannot reach a field name");
       }
-      if (lex() != ':') {
+      if (next() != ':') {
         return error("Cannot reach a field value");
       }
 
       auto field = info->get<Object>().get_field(string).unwrap();
-      auto exp = parse_field(field);
-      if (exp.is_error()) {
-        return exp.error();
-      }
+      __retry(parse_field(field));
 
-      token = lex();
+      token = next();
       if (token == '}') {
         --_level;
         return None();
@@ -169,7 +164,7 @@ class ParserJson : public LexerJson {
       return error("Max depth level exceeded");
     }
 
-    int token = lex();
+    char token = next();
 
     std::string key = "key";
     std::string val = "val";
@@ -180,19 +175,17 @@ class ParserJson : public LexerJson {
       if (pos != std::string::npos) {
 
         auto kv = parse_tag(string);
-        if (kv.is_error()) {
-          return kv.error();
-        }
+        __retry(kv);
 
         auto pair = kv.unwrap();
         key = std::move(pair.first);
         val = std::move(pair.second);
 
         // make step to get a new token
-        if (lex() != ',') {
+        if (next() != ',') {
           return error_token(token);
         }
-        token = lex();
+        token = next();
       } else {
         return error("Cannot reach the map tag or '{'");
       }
@@ -205,12 +198,12 @@ class ParserJson : public LexerJson {
       ++_level;
 
       // parse first field key or val
-      token = lex();
+      token = next();
       if (token != '$') {
         return error("Cannot reach a field name");
       }
 
-      if (lex() != ':') {
+      if (next() != ':') {
         return error("Cannot reach a field value");
       }
 
@@ -218,20 +211,14 @@ class ParserJson : public LexerJson {
       Box val_box(map.val_type());
 
       if (string == key) {
-        auto exp = parse_field(key_box.var());
-        if (exp.is_error()) {
-          return exp.error();
-        }
+        __retry(parse_field(key_box.var()));
       } else if (string == val) {
-        auto exp = parse_field(val_box.var());
-        if (exp.is_error()) {
-          return exp.error();
-        }
+        __retry(parse_field(val_box.var()));
       } else {
         return Error(format("Got an unexpected field '{}' while parse map; {}", string, get_position().to_string()));
       }
 
-      token = lex();
+      token = next();
       if (token == '}') {
         --_level;
         return error("Unexpected end of JSON object");
@@ -241,38 +228,29 @@ class ParserJson : public LexerJson {
       }
 
       // parse second field key or val
-      token = lex();
+      token = next();
       if (token != '$') {
         return error("Cannot reach a field name");
       }
 
-      if (lex() != ':') {
+      if (next() != ':') {
         return error("Cannot reach a field value");
       }
 
       if (string == key) {
-        auto exp = parse_field(key_box.var());
-        if (exp.is_error()) {
-          return exp.error();
-        }
+        __retry(parse_field(key_box.var()));
       } else if (string == val) {
-        auto exp = parse_field(val_box.var());
-        if (exp.is_error()) {
-          return exp.error();
-        }
+        __retry(parse_field(val_box.var()));
       } else {
         return Error(format("Got an unexpected field '{}' while parse map; {}", string, get_position().to_string()));
       }
 
-      auto exp = map.insert(key_box.var(), val_box.var());
-      if (exp.is_error()) {
-        return exp.error();
-      }
+      __retry(map.insert(key_box.var(), val_box.var()));
 
-      token = lex();
+      token = next();
       if (token == '}') {
         --_level;
-        token = lex();
+        token = next();
       }
       if (token == ']') {
         --_level;
@@ -283,17 +261,21 @@ class ParserJson : public LexerJson {
       }
 
       // take next '{'
-      token = lex();
+      token = next();
     }
 
     return error("Max depth level exceeded");
+  }
+
+  inline char next() {
+    return static_cast<char>(lex());
   }
 
   inline Error error(const char* str) {
     return Error(format("{}; {}", str, get_position().to_string()));
   }
 
-  inline Error error_token(int token) {
+  inline Error error_token(char token) {
     return Error(format("Unexpected token '{}'; {}", token, get_position().to_string()));
   }
 
@@ -336,3 +318,5 @@ class ParserJson : public LexerJson {
 };
 
 }  // namespace rr
+
+#undef __retry

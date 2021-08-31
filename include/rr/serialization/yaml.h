@@ -15,8 +15,10 @@ static Expected<T> from_string(std::string_view str) {
 
   T obj;
   auto info = Reflection::reflect(&obj);
-  parser.deserialize(info);
-
+  auto exp = parser.deserialize(info);
+  if (exp.is_error()) {
+    return exp.error();
+  }
   return obj;
 }
 
@@ -26,8 +28,10 @@ static Expected<T> from_stream(std::istream& stream) {
 
   T obj;
   auto info = Reflection::reflect(&obj);
-  parser.deserialize(&info);
-
+  auto exp = parser.deserialize(&info);
+  if (exp.is_error()) {
+    return exp.error();
+  }
   return obj;
 }
 

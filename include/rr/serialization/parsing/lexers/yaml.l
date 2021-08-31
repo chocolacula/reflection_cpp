@@ -40,19 +40,24 @@
 %option lexer=LexerYaml
 
 %top{
-  #include <cstdlib.h> // strtoul()
+  #include <cstdlib> // strtoul()
   #include <iostream> // std::cout etc.
   #include <iomanip>  // std::setw
   #include <vector>   // to store YAML containers
+
+  #include "../../position.h"
 }
 
 %class{
 
  public:
-  // string to accumulate YAML scalars
-  std::string string;
+  rr::Position get_position() {
+    return rr::Position{column: columno(), line_number: lineno()};
+  }
 
  protected:
+  // string to accumulate YAML scalars
+  std::string string;
 
   // count number of newlines matched
   size_t newlines()
@@ -257,7 +262,7 @@ br      \h+ | (\h* {lf})+
 \j              { chomp(); start(INITIAL); return '$'; }
 ^ \h+           { }
 ^ \h+ \k        { add_indent(); }
-.               { add(wchr()); }
+.               { add(chr()); }
 }
 
 <FBLK>{
@@ -268,7 +273,7 @@ br      \h+ | (\h* {lf})+
 \j              { chomp(); start(INITIAL); return '$'; }
 ^ \h+           { add_newline(); }
 ^ \h+ \k        { sp = 0; nl = true; add_indent(); }
-.               { add_space(); add(wchr()); }
+.               { add_space(); add(chr()); }
 }
 
 %%

@@ -12,7 +12,7 @@ struct Position {
   size_t line_number = 0;
 
   std::string to_string() {
-    return format("ln:{} col:{}", line_number, column);
+    return format("ln:{} col:{}", line_number + 1, column + 1);
   }
 };
 
