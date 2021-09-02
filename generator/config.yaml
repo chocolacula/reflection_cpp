@@ -1,5 +1,5 @@
 templates: #pathes to template files
-  {enum: templates/enum.inja, object: templates/object.inja}}
+  {enum: templates/enum.inja, object: templates/object.inja}
 
 root_dir: !!str "../generator"
 

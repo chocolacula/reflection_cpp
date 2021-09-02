@@ -291,7 +291,6 @@ class ParserYaml : public LexerYaml {
       }
 
       if (_token == ':') {
-
         auto ex = obj.get_field(get_word());
         __retry(ex);
 
@@ -397,7 +396,7 @@ class ParserYaml : public LexerYaml {
 
     while (_token != 'S' && !is_end(_token) && _token != '<') {
 
-      if (is_new_line(_token)) {
+      if (is_new_line(_token) || _token == '$') {
         next();
       }
 
@@ -435,7 +434,7 @@ class ParserYaml : public LexerYaml {
     size_t level = 0;
     while (_token != 'S' && !is_end(_token) && _token != '}') {
 
-      if (is_new_line(_token)) {
+      if (is_new_line(_token) || _token == '$') {
         next();
       }
 
