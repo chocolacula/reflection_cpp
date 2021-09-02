@@ -86,12 +86,13 @@ class ParserYaml : public LexerYaml {
             [this](auto&&) -> Expected<None> { return error_match(); });
         break;
       case '{':
-        ex = info->match([this](Object& o) -> Expected<None> { return parse_flow_map(o); },
-                         [this](Map& m) -> Expected<None> { return parse_flow_map(m); },
-                         [this](auto&&) -> Expected<None> { return error_match(); });
+        ex =
+            info->match([this](Object& o) -> Expected<None> { return parse_flow_map([&]() { return add_to_obj(o); }); },
+                        [this](Map& m) -> Expected<None> { return parse_flow_map([&]() { return add_to_map(m); }); },
+                        [this](auto&&) -> Expected<None> { return error_match(); });
         break;
       case '?':
-        ex = info->match([this](Map& m) -> Expected<None> { return parse_flow_map(m); },
+        ex = info->match([this](Map& m) -> Expected<None> { return parse_flow_map([&]() { return add_to_map(m); }); },
                          [this](auto&&) -> Expected<None> {
                            return error("A complex key, marked '?' could be deserialized in a map key only");
                          });
@@ -266,8 +267,8 @@ class ParserYaml : public LexerYaml {
                           [this](Floating& f) -> Expected<None> { return f.set(parse_double(get_word())); },
                           [this](String& s) -> Expected<None> { return s.set(get_word()); },
                           [this](Enum& e) -> Expected<None> { return e.parse(get_word()); },
-                          [this](Map& m) -> Expected<None> { return parse_map(m); },
-                          [this](Object& o) -> Expected<None> { return parse_map(o); },
+                          [this](Map& m) -> Expected<None> { return parse_map([&]() { return add_to_map(m); }); },
+                          [this](Object& o) -> Expected<None> { return parse_map([&]() { return add_to_obj(o); }); },
                           [this](auto&&) -> Expected<None> { return error_match(); });
     __retry(ex);
     next();
@@ -279,9 +280,9 @@ class ParserYaml : public LexerYaml {
     return ex;
   }
 
-  Expected<None> parse_map(Object& obj) {
+  Expected<None> parse_map(std::function<Expected<None>()> add) {
     if (_token == '{') {
-      return parse_flow_map(obj);
+      return parse_flow_map(std::move(add));
     }
 
     while (_token != 'S' && !is_end(_token) && _token != '<') {
@@ -291,17 +292,7 @@ class ParserYaml : public LexerYaml {
       }
 
       if (_token == ':') {
-        auto ex = obj.get_field(get_word());
-        __retry(ex);
-
-        auto info = Reflection::reflect(ex.unwrap());
-
-        next();
-        __retry(parse(&info));
-
-        if (_token == '<') {
-          next();
-        }
+        __retry(add());
       } else {
         return error_token(_token);
       }
@@ -310,7 +301,7 @@ class ParserYaml : public LexerYaml {
   }
 
   // parse "{ key:val, ... }" to an object
-  Expected<None> parse_flow_map(Object& obj) {
+  Expected<None> parse_flow_map(std::function<Expected<None>()> add) {
     next();  // skip '{' itself
 
     size_t level = 0;
@@ -333,16 +324,9 @@ class ParserYaml : public LexerYaml {
       }
 
       if (_token == ':') {
-
-        auto ex = obj.get_field(get_word());
-        __retry(ex);
-
-        auto info = Reflection::reflect(ex.unwrap());
-
-        next();
-        if (!is_new_line(_token) && _token != ',') {
-          __retry(parse(&info));
-        }
+        __retry(add());
+      } else {
+        return error_token(_token);
       }
 
       if (is_new_line(_token)) {
@@ -389,136 +373,35 @@ class ParserYaml : public LexerYaml {
     return None();
   }
 
-  Expected<None> parse_map(Map& map) {
-    if (_token == '{') {
-      return parse_flow_map(map);
-    }
+  inline Expected<None> add_to_obj(Object& obj) {
+    auto ex = obj.get_field(get_word());
+    __retry(ex);
 
-    while (_token != 'S' && !is_end(_token) && _token != '<') {
+    auto info = Reflection::reflect(ex.unwrap());
 
-      if (is_new_line(_token) || _token == '$') {
-        next();
-      }
-
-      Box key_box(map.key_type());
-      Box val_box(map.val_type());
-
-      auto info_k = Reflection::reflect(key_box.var());
-      auto info_v = Reflection::reflect(val_box.var());
-
-      // get a key
-      __retry(parse(&info_k));
-
-      // get a value
-      if (_token == ':') {
-        next();
-
-        __retry(parse(&info_v));
-
-        if (_token == '<') {
-          next();
-        }
-      } else {
-        return error_token(_token);
-      }
-
-      map.insert(key_box.var(), val_box.var());
-    }
+    next();
+    __retry(parse(&info));
     return None();
   }
 
-  // parse "{ key:val, ... }" to a map
-  Expected<None> parse_flow_map(Map& map) {
-    next();  // skip '{' itself
+  inline Expected<None> add_to_map(Map& map) {
+    Box key_box(map.key_type());
+    Box val_box(map.val_type());
 
-    size_t level = 0;
-    while (_token != 'S' && !is_end(_token) && _token != '}') {
+    auto info_k = Reflection::reflect(key_box.var());
+    auto info_v = Reflection::reflect(val_box.var());
 
-      if (is_new_line(_token) || _token == '$') {
-        next();
-      }
+    // get a key
+    __retry(parse(&info_k));
+    next();
 
-      if (_token == '>') {
-        ++level;
-        next();
-      } else {
-        while (_token == '<') {
-          if (level > 0) {
-            --level;
-          }
-          next();
-        }
-      }
-
-      Box key_box(map.key_type());
-      Box val_box(map.val_type());
-
-      auto info_k = Reflection::reflect(key_box.var());
-      auto info_v = Reflection::reflect(val_box.var());
-
-      // get a key
-      __retry(parse(&info_k));
-
-      if (_token == '<') {
-        next();
-      }
-
-      // get a value
-      if (_token == ':') {
-        next();
-
-        __retry(parse(&info_v));
-
-        if (_token == '<') {
-          next();
-        }
-      } else {
-        return error_token(_token);
-      }
-
-      map.insert(key_box.var(), val_box.var());
-
-      if (is_new_line(_token)) {
-        next();
-      }
-      if (_token == '>') {
-        ++level;
-        next();
-      } else {
-        while (_token == '<') {
-          if (level > 0) {
-            --level;
-          }
-          next();
-        }
-      }
-      if (_token == ',') {
-        next();
-      }
-      if (is_new_line(_token)) {
-        next();
-      }
-      if (_token == '>') {
-        ++level;
-        next();
-      } else if (_token == '<') {
-        if (level > 0) {
-          --level;
-        }
-        next();
-      }
-    }
-
-    if (_token == '}') {
-      next();
-    }
-    if (is_new_line(_token)) {
-      next();
-    }
-    while (_token == '<' && level-- > 0) {
+    // get a value
+    __retry(parse(&info_v));
+    if (_token == '<') {
       next();
     }
 
+    map.insert(key_box.var(), val_box.var());
     return None();
   }
 
