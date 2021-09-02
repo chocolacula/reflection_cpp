@@ -22,7 +22,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#line 17 "include/rr/serialization/parsing/lexers/json.l"
+#line 16 "include/rr/serialization/parsing/lexers/json.l"
 
   #include <cstdlib>  // strtoul(), strtod()
   #include <iostream> // std::cout etc.
@@ -54,7 +54,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 class LexerJson : public reflex::AbstractLexer<reflex::Matcher> {
-#line 25 "include/rr/serialization/parsing/lexers/json.l"
+#line 24 "include/rr/serialization/parsing/lexers/json.l"
 
  public:
   rr::Position get_position() {
@@ -62,7 +62,12 @@ class LexerJson : public reflex::AbstractLexer<reflex::Matcher> {
   }
 
  protected:
-  std::string string; // token value for token '$' (string)
+  inline std::string& get_word() {
+    return _word;
+  }
+
+ private:
+  std::string _word; // token value for token '$' (string)
 
  public:
   typedef reflex::AbstractLexer<reflex::Matcher> AbstractBaseLexer;
@@ -104,7 +109,6 @@ class LexerJson : public reflex::AbstractLexer<reflex::Matcher> {
 // * %o freespace to space regular expressions between concat and alternations
 // * %o dotall mode: . matches \n
 // * %o unicode mode: . mathes any Unicode character
-// * %x STRING state with rules to convert a JSON string to std::wstring
 // * \p{Non_ASCII_Unicode} matches any non-ASCII Unicode character
 // * JSON value types are indicated with tokens '0', 't', 'f', '#', '$'
 // * JSONParser is a recursive descent parser for JSON
@@ -147,37 +151,37 @@ int LexerJson::lex(void)
               out().put(matcher().input());
             }
             break;
-          case 1: // rule include/rr/serialization/parsing/lexers/json.l:49: [ \t\n\r]+ :
-#line 49 "include/rr/serialization/parsing/lexers/json.l"
+          case 1: // rule include/rr/serialization/parsing/lexers/json.l:53: [ \t\n\r]+ :
+#line 53 "include/rr/serialization/parsing/lexers/json.l"
 { /* ignore white space */ }
             break;
-          case 2: // rule include/rr/serialization/parsing/lexers/json.l:50: [\]\[}{,:] :
-#line 50 "include/rr/serialization/parsing/lexers/json.l"
+          case 2: // rule include/rr/serialization/parsing/lexers/json.l:54: [\]\[}{,:] :
+#line 54 "include/rr/serialization/parsing/lexers/json.l"
 { return text()[0]; }
             break;
-          case 3: // rule include/rr/serialization/parsing/lexers/json.l:51: null :
-#line 51 "include/rr/serialization/parsing/lexers/json.l"
+          case 3: // rule include/rr/serialization/parsing/lexers/json.l:55: null :
+#line 55 "include/rr/serialization/parsing/lexers/json.l"
 { return '0'; }
             break;
-          case 4: // rule include/rr/serialization/parsing/lexers/json.l:52: true :
-#line 52 "include/rr/serialization/parsing/lexers/json.l"
+          case 4: // rule include/rr/serialization/parsing/lexers/json.l:56: true :
+#line 56 "include/rr/serialization/parsing/lexers/json.l"
 { return 't'; }
             break;
-          case 5: // rule include/rr/serialization/parsing/lexers/json.l:53: false :
-#line 53 "include/rr/serialization/parsing/lexers/json.l"
+          case 5: // rule include/rr/serialization/parsing/lexers/json.l:57: false :
+#line 57 "include/rr/serialization/parsing/lexers/json.l"
 { return 'f'; }
             break;
-          case 6: // rule include/rr/serialization/parsing/lexers/json.l:54: {number} :
-#line 54 "include/rr/serialization/parsing/lexers/json.l"
-{ string = text(); return '#'; }
+          case 6: // rule include/rr/serialization/parsing/lexers/json.l:58: {number} :
+#line 58 "include/rr/serialization/parsing/lexers/json.l"
+{ _word = text(); return '#'; }
             break;
-          case 7: // rule include/rr/serialization/parsing/lexers/json.l:55: \" :
-#line 55 "include/rr/serialization/parsing/lexers/json.l"
-{ string.clear(); start(STRING); }
+          case 7: // rule include/rr/serialization/parsing/lexers/json.l:59: \" :
+#line 59 "include/rr/serialization/parsing/lexers/json.l"
+{ _word.clear(); start(STRING); }
 
             break;
-          case 8: // rule include/rr/serialization/parsing/lexers/json.l:70: . :
-#line 70 "include/rr/serialization/parsing/lexers/json.l"
+          case 8: // rule include/rr/serialization/parsing/lexers/json.l:74: . :
+#line 74 "include/rr/serialization/parsing/lexers/json.l"
 { return '!'; /* error */ }
 
             break;
@@ -197,48 +201,48 @@ int LexerJson::lex(void)
               out().put(matcher().input());
             }
             break;
-          case 1: // rule include/rr/serialization/parsing/lexers/json.l:58: \" :
-#line 58 "include/rr/serialization/parsing/lexers/json.l"
+          case 1: // rule include/rr/serialization/parsing/lexers/json.l:62: \" :
+#line 62 "include/rr/serialization/parsing/lexers/json.l"
 { start(INITIAL); return '$'; }
             break;
-          case 2: // rule include/rr/serialization/parsing/lexers/json.l:59: \\ ["\\/] :
-#line 59 "include/rr/serialization/parsing/lexers/json.l"
-{ string.push_back(text()[1]); }
-            break;
-          case 3: // rule include/rr/serialization/parsing/lexers/json.l:60: \\ b :
-#line 60 "include/rr/serialization/parsing/lexers/json.l"
-{ string.push_back('\b'); }
-            break;
-          case 4: // rule include/rr/serialization/parsing/lexers/json.l:61: \\ t :
-#line 61 "include/rr/serialization/parsing/lexers/json.l"
-{ string.push_back('\t'); }
-            break;
-          case 5: // rule include/rr/serialization/parsing/lexers/json.l:62: \\ n :
-#line 62 "include/rr/serialization/parsing/lexers/json.l"
-{ string.push_back('\n'); }
-            break;
-          case 6: // rule include/rr/serialization/parsing/lexers/json.l:63: \\ f :
+          case 2: // rule include/rr/serialization/parsing/lexers/json.l:63: \\ ["\\/] :
 #line 63 "include/rr/serialization/parsing/lexers/json.l"
-{ string.push_back('\f'); }
+{ _word.push_back(text()[1]); }
             break;
-          case 7: // rule include/rr/serialization/parsing/lexers/json.l:64: \\ r :
+          case 3: // rule include/rr/serialization/parsing/lexers/json.l:64: \\ b :
 #line 64 "include/rr/serialization/parsing/lexers/json.l"
-{ string.push_back('\r'); }
+{ _word.push_back('\b'); }
             break;
-          case 8: // rule include/rr/serialization/parsing/lexers/json.l:65: \\ u [[:xdigit:]]{4} :
+          case 4: // rule include/rr/serialization/parsing/lexers/json.l:65: \\ t :
 #line 65 "include/rr/serialization/parsing/lexers/json.l"
-{ string.push_back(strtoul(text() + 2, NULL, 16)); }
+{ _word.push_back('\t'); }
             break;
-          case 9: // rule include/rr/serialization/parsing/lexers/json.l:66: [\]-\x7f\x20-\[] :
+          case 5: // rule include/rr/serialization/parsing/lexers/json.l:66: \\ n :
 #line 66 "include/rr/serialization/parsing/lexers/json.l"
-{ string.push_back(text()[0]); }
+{ _word.push_back('\n'); }
             break;
-          case 10: // rule include/rr/serialization/parsing/lexers/json.l:67: \p{Non_ASCII_Unicode} :
+          case 6: // rule include/rr/serialization/parsing/lexers/json.l:67: \\ f :
 #line 67 "include/rr/serialization/parsing/lexers/json.l"
-{ string.append(str()); }
+{ _word.push_back('\f'); }
             break;
-          case 11: // rule include/rr/serialization/parsing/lexers/json.l:70: . :
+          case 7: // rule include/rr/serialization/parsing/lexers/json.l:68: \\ r :
+#line 68 "include/rr/serialization/parsing/lexers/json.l"
+{ _word.push_back('\r'); }
+            break;
+          case 8: // rule include/rr/serialization/parsing/lexers/json.l:69: \\ u [[:xdigit:]]{4} :
+#line 69 "include/rr/serialization/parsing/lexers/json.l"
+{ _word.push_back(strtoul(text() + 2, NULL, 16)); }
+            break;
+          case 9: // rule include/rr/serialization/parsing/lexers/json.l:70: [\]-\x7f\x20-\[] :
 #line 70 "include/rr/serialization/parsing/lexers/json.l"
+{ _word.push_back(text()[0]); }
+            break;
+          case 10: // rule include/rr/serialization/parsing/lexers/json.l:71: \p{Non_ASCII_Unicode} :
+#line 71 "include/rr/serialization/parsing/lexers/json.l"
+{ _word.append(str()); }
+            break;
+          case 11: // rule include/rr/serialization/parsing/lexers/json.l:74: . :
+#line 74 "include/rr/serialization/parsing/lexers/json.l"
 { return '!'; /* error */ }
 
             break;

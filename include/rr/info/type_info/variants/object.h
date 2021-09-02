@@ -31,7 +31,7 @@ struct Object {
     return _fields;
   }
 
-  Var own_var() {
+  Var var() {
     return _var;
   }
 

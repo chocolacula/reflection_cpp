@@ -23,10 +23,16 @@ struct Expected : public BASE {
 
   template <typename = std::enable_if_t<!std::is_same_v<ErrorT, Expected>, void>>
   Expected(const ErrorT& error) : BASE(error) {  // NOLINT implicit constructor
+#ifndef NDEBUG
+    throw std::runtime_error(this->error().what().data());
+#endif
   }
 
   template <typename = std::enable_if_t<!std::is_same_v<ErrorT, Expected>, void>>
   Expected(ErrorT&& error) : BASE(std::move(error)) {  // NOLINT implicit constructor
+#ifndef NDEBUG
+    throw std::runtime_error(this->error().what().data());
+#endif
   }
 
   bool is_error() {

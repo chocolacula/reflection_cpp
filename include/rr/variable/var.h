@@ -14,6 +14,8 @@ std::string_view type_name(TypeId id);
 /// all types represented like a pointer + type id + const flag
 /// the same representation for each type
 struct Var {
+  Var() : _value(nullptr), _type(), _is_const(true) {
+  }
 
   template <typename T>
   explicit Var(const T* value) : _value(const_cast<T*>(value)), _type(TypeId::get<T>()), _is_const(true) {

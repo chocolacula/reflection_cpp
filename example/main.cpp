@@ -15,7 +15,7 @@ int main() {
   auto white = Colors::kWhite;
 
   // Reflection::reflect(ptr) returns a TypeInfo structure
-  // which could represent Integer, Float, Enum and other kinds of types
+  // which could represent Integer, Floating, Enum and other kinds of types
   auto white_info = Reflection::reflect(&white);
 
   // You can check kind of the TypeInfo by calling is<Type>() and get it further
@@ -72,7 +72,7 @@ int main() {
 
   // or by using separate reflection step for a field
   auto field_var = bicycle_info.get<Object>().get_field("weight").unwrap();
-  auto ok = Reflection::reflect(field_var).get<Float>().set(DBL_MAX);
+  auto ok = Reflection::reflect(field_var).get<Floating>().set(DBL_MAX);
 
   if (ok.is_error()) {
     println("The value too big for a float field");

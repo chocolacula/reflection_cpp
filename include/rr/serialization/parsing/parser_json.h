@@ -14,6 +14,8 @@
 #include "../../variable/box.h"
 #include "define_retry.h"
 #include "lexers/compiled/lexer_json.yy.h"
+#include "rr/expected.h"
+#include "rr/variant/variant.h"
 
 namespace rr {
 
@@ -44,21 +46,21 @@ class ParserJson : public LexerJson {
       case 'f':
         return info->get<Bool>().set(false);
       case '#':
-        return info->match([this](Integer& i) -> Expected<None> { return i.set(parse_int(string)); },
-                           [this](Float& f) -> Expected<None> { return f.set(parse_double(string)); },
+        return info->match([this](Integer& i) -> Expected<None> { return i.set(parse_int(get_word())); },
+                           [this](Floating& f) -> Expected<None> { return f.set(parse_double(get_word())); },
                            [this](auto&&) -> Expected<None> { return error_match(); });
       case '$':
-        return info->match([this](String& s) -> Expected<None> { return s.set(string); },
-                           [this](Enum& e) -> Expected<None> { return e.parse(string); },
+        return info->match([this](String& s) -> Expected<None> { return s.set(get_word()); },
+                           [this](Enum& e) -> Expected<None> { return e.parse(get_word()); },
                            [this](auto&&) -> Expected<None> { return error_match(); });
       case '[':
         // clang-format off
         return info->match(
             [this, info](Array& a) -> Expected<None> {
-              return parse_array(a.nested_type(), [this, &a](size_t i, Var var) { add_to_array(a, i, var); });
+              return parse_array(a.nested_type(), [&](size_t i, Var var) { return add_to_array(a, i, var); });
             },
             [this, info](Sequence& s) -> Expected<None> {
-              return parse_array(s.nested_type(), [&s](size_t, Var var) { s.push(var); });
+              return parse_array(s.nested_type(), [&](size_t, Var var) { return s.push(var); });
             },
             [this](Map& m) -> Expected<None> {
               return parse_map(m);
@@ -74,7 +76,7 @@ class ParserJson : public LexerJson {
     }
   }
 
-  Expected<None> parse_array(TypeId nested_type, std::function<void(size_t, Var)> add) {
+  Expected<None> parse_array(TypeId nested_type, std::function<Expected<None>(size_t, Var)> add) {
     if (++_level > kMaxLevel) {
       return error("Max depth level exceeded");
     }
@@ -86,18 +88,14 @@ class ParserJson : public LexerJson {
       return None();
     }
 
+    Box box(nested_type);
+    auto boxed_info = Reflection::reflect(box.var());
+
     for (size_t len = 0; len < kMaxArr; ++len) {
 
-      Box box(nested_type);
-      auto boxed_info = Reflection::reflect(box.var());
-
       auto ex = parse(&boxed_info, token)
-                    .match_move(
-                        [&, len](None&&) -> Expected<None> {
-                          add(len, box.var());
-                          return None();
-                        },
-                        [](Error&& err) -> Expected<None> { return err; });
+                    .match_move([&, len](None&&) -> Expected<None> { return add(len, box.var()); },
+                                [](Error&& err) -> Expected<None> { return err; });
       __retry(ex);
 
       char token = next();
@@ -116,12 +114,12 @@ class ParserJson : public LexerJson {
     return None();
   }
 
-  static inline void add_to_array(Array& a, size_t i, Var var) {
-    if (i >= a.size()) {
-      return;
+  static inline Expected<None> add_to_array(Array& a, size_t i, Var var) {
+    if (i < a.size()) {
+      auto item = a.at(i).unwrap();
+      Reflection::copy(item, var);
     }
-    auto item = a.at(i).unwrap();
-    Reflection::copy(item, var);
+    return None();
   }
 
   Expected<None> parse_object(TypeInfo* info) {
@@ -143,7 +141,7 @@ class ParserJson : public LexerJson {
         return error("Cannot reach a field value");
       }
 
-      auto field = info->get<Object>().get_field(string).unwrap();
+      auto field = info->get<Object>().get_field(get_word()).unwrap();
       __retry(parse_field(field));
 
       token = next();
@@ -171,10 +169,10 @@ class ParserJson : public LexerJson {
 
     if (token == '$') {
       // if particular tag found parse it
-      auto pos = string.find("!!map");
+      auto pos = get_word().find("!!map");
       if (pos != std::string::npos) {
 
-        auto kv = parse_tag(string);
+        auto kv = parse_tag(get_word());
         __retry(kv);
 
         auto pair = kv.unwrap();
@@ -210,12 +208,13 @@ class ParserJson : public LexerJson {
       Box key_box(map.key_type());
       Box val_box(map.val_type());
 
-      if (string == key) {
+      if (get_word() == key) {
         __retry(parse_field(key_box.var()));
-      } else if (string == val) {
+      } else if (get_word() == val) {
         __retry(parse_field(val_box.var()));
       } else {
-        return Error(format("Got an unexpected field '{}' while parse map; {}", string, get_position().to_string()));
+        return Error(
+            format("Got an unexpected field '{}' while parse map; {}", get_word(), get_position().to_string()));
       }
 
       token = next();
@@ -237,12 +236,13 @@ class ParserJson : public LexerJson {
         return error("Cannot reach a field value");
       }
 
-      if (string == key) {
+      if (get_word() == key) {
         __retry(parse_field(key_box.var()));
-      } else if (string == val) {
+      } else if (get_word() == val) {
         __retry(parse_field(val_box.var()));
       } else {
-        return Error(format("Got an unexpected field '{}' while parse map; {}", string, get_position().to_string()));
+        return Error(
+            format("Got an unexpected field '{}' while parse map; {}", get_word(), get_position().to_string()));
       }
 
       __retry(map.insert(key_box.var(), val_box.var()));

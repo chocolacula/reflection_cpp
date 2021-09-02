@@ -5,6 +5,7 @@
 #include <string_view>
 
 #include "../../../expected.h"
+#include "../../../variable/var.h"
 
 namespace rr {
 
@@ -22,6 +23,10 @@ struct Bool {
     }
     *_value = value;
     return None();
+  }
+
+  Var var() {
+    return Var(_value, _is_const);
   }
 
   std::string_view to_string() const {

@@ -5,7 +5,6 @@
 // * %o freespace to space regular expressions between concat and alternations
 // * %o dotall mode: . matches \n
 // * %o unicode mode: . mathes any Unicode character
-// * %x STRING state with rules to convert a JSON string to std::wstring
 // * \p{Non_ASCII_Unicode} matches any non-ASCII Unicode character
 // * JSON value types are indicated with tokens '0', 't', 'f', '#', '$'
 // * JSONParser is a recursive descent parser for JSON
@@ -29,7 +28,12 @@
   }
 
  protected:
-  std::string string; // token value for token '$' (string)
+  inline std::string& get_word() {
+    return _word;
+  }
+
+ private:
+  std::string _word; // token value for token '$' (string)
 }
 
 %o fast freespace dotall unicode
@@ -51,20 +55,20 @@ number  {int} {frac}? {exp}?
 null            { return '0'; }
 true            { return 't'; }
 false           { return 'f'; }
-{number}        { string = text(); return '#'; }
-\"              { string.clear(); start(STRING); }
+{number}        { _word = text(); return '#'; }
+\"              { _word.clear(); start(STRING); }
 
 <STRING>{
 \"                      { start(INITIAL); return '$'; }
-\\ ["\\/]               { string.push_back(text()[1]); }
-\\ b                    { string.push_back('\b'); }
-\\ t                    { string.push_back('\t'); }
-\\ n                    { string.push_back('\n'); }
-\\ f                    { string.push_back('\f'); }
-\\ r                    { string.push_back('\r'); }
-\\ u [[:xdigit:]]{4}    { string.push_back(strtoul(text() + 2, NULL, 16)); }
-[\]-\x7f\x20-\[]        { string.push_back(text()[0]); }
-\p{Non_ASCII_Unicode}   { string.append(str()); }
+\\ ["\\/]               { _word.push_back(text()[1]); }
+\\ b                    { _word.push_back('\b'); }
+\\ t                    { _word.push_back('\t'); }
+\\ n                    { _word.push_back('\n'); }
+\\ f                    { _word.push_back('\f'); }
+\\ r                    { _word.push_back('\r'); }
+\\ u [[:xdigit:]]{4}    { _word.push_back(strtoul(text() + 2, NULL, 16)); }
+[\]-\x7f\x20-\[]        { _word.push_back(text()[0]); }
+\p{Non_ASCII_Unicode}   { _word.append(str()); }
 }
 
 <*>.            { return '!'; /* error */ }

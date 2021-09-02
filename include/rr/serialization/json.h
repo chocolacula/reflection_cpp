@@ -67,7 +67,7 @@ static void serialize(const TypeInfo& info, std::string* result) {
       },
       [result](const Bool& b) { *result += b.to_string(); },     //
       [result](const Integer& i) { *result += i.to_string(); },  //
-      [result](const Float& f) { *result += f.to_string(6); },
+      [result](const Floating& f) { *result += f.to_string(6); },
       [result](const String& s) {
         *result += '"';
         *result += s.get();

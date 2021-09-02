@@ -56,8 +56,9 @@
   }
 
  protected:
-  // string to accumulate YAML scalars
-  std::string string;
+  inline std::string& get_word() {
+    return _word;
+  }
 
   // count number of newlines matched
   size_t newlines()
@@ -90,42 +91,42 @@
           spaces -= stops.back();
           stops.push_back(stops.back() + indent);
         }
-        string.append(spaces - indent, ' ');
+        _word.append(spaces - indent, ' ');
       }
     }
   }
 
   // clear the string scalar before accumulating a new scalar
   void clear() {
-    string.clear();
+    _word.clear();
   }
 
   // add one or n chars c to the string
   void add(char c, size_t n = 1) {
     while (n-- > 0)
-      string.push_back(c);
+      _word.push_back(c);
   }
 
   // add indent to the string, prefixed with a \n if nl is true
   void add_indent() {
     if (nl)
-      string.push_back('\n');
+      _word.push_back('\n');
     size_t stop = matcher().last_stop();
     if (size() > stop)
-      string.append(size() - stop, ' ');
+      _word.append(size() - stop, ' ');
   }
 
   // if nl is true, add a \n to the string then reset nl
   void add_newline() {
     if (nl) {
-      string.push_back('\n');
+      _word.push_back('\n');
       nl = false;
     }
   }
 
   // add sp spaces to the string
   void add_space() {
-    string.append(sp, ' ');
+    _word.append(sp, ' ');
     sp = 0;
   }
 
@@ -135,13 +136,13 @@
     switch (mode)
     {
       case CLIP:
-        while (!string.empty() && string.back() == '\n')
-          string.pop_back();
-        string.push_back('\n');
+        while (!_word.empty() && _word.back() == '\n')
+          _word.pop_back();
+        _word.push_back('\n');
         break;
       case STRIP:
-        while (!string.empty() && string.back() == '\n')
-          string.pop_back();
+        while (!_word.empty() && _word.back() == '\n')
+          _word.pop_back();
         break;
       case KEEP:
         break;
@@ -152,6 +153,9 @@
   size_t sp;                       // insert spaces in folded block scalar
   bool nl;                         // insert newline in folded block scalar
   enum { CLIP, STRIP, KEEP } mode; // chomp mode
+
+ private:
+  std::string _word; // string to accumulate YAML scalars
 }
 
 // Lexer class initialization at construction
@@ -210,8 +214,8 @@ br      \h+ | (\h* {lf})+
 ">"  \d* {nl}   { clear(); parse_indent(1); mode = CLIP;  start(FOLD); }
 ">-" \d* {nl}   { clear(); parse_indent(2); mode = STRIP; start(FOLD); }
 ">+" \d* {nl}   { clear(); parse_indent(2); mode = KEEP;  start(FOLD); }
-{tag}           { return chr(); }
-{scalar}        { string = str(); return '$'; }
+{tag}           { _word = str(); return chr(); }
+{scalar}        { _word = str(); return '$'; }
 
 <APOS>{
 '               { start(INITIAL); return '$'; }

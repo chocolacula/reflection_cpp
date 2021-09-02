@@ -8,7 +8,7 @@ namespace rr {
 template <typename T>
 struct FloatActions {
   static TypeInfo reflect(void* value, bool is_const) {
-    return TypeInfo(Float(static_cast<double*>(value), sizeof(T), is_const));
+    return TypeInfo(Floating(static_cast<T*>(value), is_const));
   }
 
   static void call_delete(void* pointer, bool in_place) {

@@ -10,14 +10,7 @@
 #include "../../variable/box.h"
 #include "define_retry.h"
 #include "lexers/compiled/lexer_yaml.yy.h"
-#include "rr/info/type_info/variants/array/array.h"
-#include "rr/info/type_info/variants/enum/enum.h"
-#include "rr/info/type_info/variants/integer.h"
-#include "rr/info/type_info/variants/map/map.h"
-#include "rr/info/type_info/variants/object.h"
-#include "rr/info/type_info/variants/sequence/sequence.h"
-#include "rr/info/type_info/variants/string.h"
-#include "rr/reflection/printer.h"
+#include "rr/variant/variant.h"
 
 namespace rr {
 
@@ -51,73 +44,92 @@ class ParserYaml : public LexerYaml {
       next();
     }
 
-    // anchors support
-    if (_token == '&') {
-      // TODO get name of anchor
-      next();
-    } else if (_token == '*') {
-      // TODO find a var with the same name and copy it
+    // just ignore tags
+    if (_token == '!') {
       next();
     }
 
+    if (_token == '*') {
+      auto anchor = get_word();
+      auto var = _anchors[anchor.substr(1, anchor.size() - 1)];
+      Reflection::copy(info->var(), var);
+
+      next();
+      return None();
+    }
+
+    std::string anchor;
+    if (_token == '&') {
+      anchor = get_word();
+      next();
+    }
+
+    Expected<None> ex = None();
     switch (_token) {
       case '-':
-        return parse_seq(info);
+        ex = parse_seq(info);
+        break;
       case '>':
-        return parse_ind(info);
+        ex = parse_ind(info);
+        break;
       case '$':
-        return parse_str(info);
+        ex = parse_str(info);
+        break;
       case '[':
-        return parse_flow_seq(info);
+        ex = info->match(
+            [this](Array& a) -> Expected<None> {
+              return parse_flow_seq(a.nested_type(), [&](size_t i, Var var) { return add_to_array(a, i, var); });
+            },
+            [this](Sequence& s) -> Expected<None> {
+              return parse_flow_seq(s.nested_type(), [&](size_t, Var var) { return s.push(var); });
+            },
+            [this](auto&&) -> Expected<None> { return error_match(); });
+        break;
       case '{':
-        return parse_flow_map(info);
+        ex = info->match([this](Object& o) -> Expected<None> { return parse_flow_map(o); },
+                         [this](Map& m) -> Expected<None> { return parse_flow_map(m); },
+                         [this](auto&&) -> Expected<None> { return error_match(); });
+        break;
       case '?':
-        return parse_key(info);
+        ex = info->match([this](Map& m) -> Expected<None> { return parse_flow_map(m); },
+                         [this](auto&&) -> Expected<None> {
+                           return error("A complex key, marked '?' could be deserialized in a map key only");
+                         });
+        break;
       default:
-        return error_token(_token);
-    }
-  }
-
-  // parse "? key : val ..."
-  Expected<None> parse_key(TypeInfo* info) {
-    next();
-
-    if (!info->is<Map>()) {
-      return error_match();
+        ex = error_token(_token);
+        break;
     }
 
-    auto m = info->get<Map>();
-
-    Box key_box(m.key_type());
-
-    auto info_k = Reflection::reflect(key_box.var());
-    if (is_new_line(_token)) {
-      next();
-
-      if (_token == '>') {
-        __retry(parse_ind(&info_k));
-      }
-    } else {
-      matcher().insert_stop(matcher().columno());
-      __retry(parse(&info_k));
-
-      if (_token == '<') {
-        next();
-      }
+    if (!anchor.empty() && anchor[0] == '&') {
+      _anchors[anchor.substr(1, anchor.size() - 1)] = info->var();
     }
 
-    if (_token == ':') {
-      // parse all other data
-      // return parse_map_to_map(m, key_box.var());
-    }
-
-    return error("Cannot reach a value while deserialize map");
+    return ex;
   }
 
   // parse "- val ..."
   Expected<None> parse_seq(TypeInfo* info) {
+    return info->match(
+        [this](Array& a) -> Expected<None> {
+          return parse_seq(a.nested_type(), [&](size_t i, Var var) { return add_to_array(a, i, var); });
+        },
+        [this](Sequence& s) -> Expected<None> {
+          return parse_seq(s.nested_type(), [&](size_t, Var var) { return s.push(var); });
+        },
+        [this](auto&&) -> Expected<None> { return error_match(); });
+  }
+
+  Expected<None> parse_seq(TypeId nested_type, std::function<Expected<None>(size_t, Var)> add) {
+    if (_token == '[') {
+      return parse_flow_seq(nested_type, std::move(add));
+    }
+
     size_t level = 0;
     size_t i = 0;
+
+    Box box(nested_type);
+    auto info = Reflection::reflect(box.var());
 
     while (true) {
       if (_token == '>') {
@@ -139,45 +151,23 @@ class ParserYaml : public LexerYaml {
       }
 
       next();  // skip '-' itself
+
+      __retry(parse(&info));
       i++;
-
-      auto ex = info->match(
-          [this, i](Array& a) -> Expected<None> {
-            if (i >= a.size()) {
-              return None();
-            }
-
-            Box box(a.nested_type());
-            auto box_info = Reflection::reflect(box.var());
-
-            __retry(parse(&box_info));
-
-            auto item = a.at(i).unwrap();
-
-            Reflection::copy(item, box.var());
-            return None();
-          },
-          [this](Sequence& s) -> Expected<None> {
-            Box box(s.nested_type());
-            auto box_info = Reflection::reflect(box.var());
-
-            __retry(parse(&box_info));
-
-            s.push(box.var());
-            return None();
-          },
-          [this](auto&&) -> Expected<None> { return error_match(); });
-      __retry(ex);
+      __retry(add(i, box.var()));
     }
     return None();
   }
 
   // parse "[ val, ... ]"
-  Expected<None> parse_flow_seq(TypeInfo* info) {
-    next();
+  Expected<None> parse_flow_seq(TypeId nested_type, std::function<Expected<None>(size_t, Var)> add) {
+    next();  // skip '[' itself
 
     size_t level = 0;
     size_t i = 0;
+
+    Box box(nested_type);
+    auto info = Reflection::reflect(box.var());
 
     while (!is_end(_token) && _token != 'S' && _token != ']') {
       if (is_new_line(_token)) {
@@ -195,33 +185,9 @@ class ParserYaml : public LexerYaml {
         }
       }
 
-      auto ex = info->match(
-          [this, i](Array& a) -> Expected<None> {
-            if (i >= a.size()) {
-              return None();
-            }
-
-            Box box(a.nested_type());
-            auto box_info = Reflection::reflect(box.var());
-
-            __retry(parse(&box_info));
-
-            auto item = a.at(i).unwrap();
-
-            Reflection::copy(item, box.var());
-            return None();
-          },
-          [this](Sequence& s) -> Expected<None> {
-            Box box(s.nested_type());
-            auto box_info = Reflection::reflect(box.var());
-
-            __retry(parse(&box_info));
-
-            s.push(box.var());
-            return None();
-          },
-          [this](auto&&) -> Expected<None> { return error_match(); });
-      __retry(ex);
+      __retry(parse(&info));
+      i++;
+      __retry(add(i, box.var()));
 
       if (is_new_line(_token)) {
         next();
@@ -267,16 +233,23 @@ class ParserYaml : public LexerYaml {
     return None();
   }
 
+  static inline Expected<None> add_to_array(Array& a, size_t i, Var var) {
+    if (i < a.size()) {
+      auto item = a.at(i).unwrap();
+      Reflection::copy(item, var);
+    }
+    return None();
+  }
+
   // parse indented value (string, nested sequence, or nested map)
   Expected<None> parse_ind(TypeInfo* info) {
     next();  // skip indention token itself
 
-    auto ex = info->match([this, info](Array& a) -> Expected<None> { return parse_seq(info); },
-                          [this, info](Sequence& s) -> Expected<None> { return parse_seq(info); },
-                          [this](String& s) -> Expected<None> { return s.set(string); },
-                          [this](Object& o) -> Expected<None> { return parse_map2(o); },
-                          [this](Map& m) -> Expected<None> { return parse_map2(m); },
-                          [this](auto&&) -> Expected<None> { return error_match(); });
+    auto ex = parse(info);
+
+    if (is_new_line(_token)) {
+      next();
+    }
     if (_token == '<') {
       next();
     }
@@ -288,13 +261,13 @@ class ParserYaml : public LexerYaml {
     // a string could be a key in a map
     // or name of a field in an object
     // or be just a string value of something
-    auto ex = info->match([this](Bool& b) -> Expected<None> { return b.set(parse_bool(string)); },
-                          [this](Integer& i) -> Expected<None> { return i.set(parse_int(string)); },
-                          [this](Float& f) -> Expected<None> { return f.set(parse_double(string)); },
-                          [this](String& s) -> Expected<None> { return s.set(string); },
-                          [this](Enum& e) -> Expected<None> { return e.parse(string); },
-                          [this](Map& m) -> Expected<None> { return parse_map2(m); },
-                          [this](Object& o) -> Expected<None> { return parse_map2(o); },
+    auto ex = info->match([this](Bool& b) -> Expected<None> { return b.set(parse_bool(get_word())); },
+                          [this](Integer& i) -> Expected<None> { return i.set(parse_int(get_word())); },
+                          [this](Floating& f) -> Expected<None> { return f.set(parse_double(get_word())); },
+                          [this](String& s) -> Expected<None> { return s.set(get_word()); },
+                          [this](Enum& e) -> Expected<None> { return e.parse(get_word()); },
+                          [this](Map& m) -> Expected<None> { return parse_map(m); },
+                          [this](Object& o) -> Expected<None> { return parse_map(o); },
                           [this](auto&&) -> Expected<None> { return error_match(); });
     __retry(ex);
     next();
@@ -302,10 +275,15 @@ class ParserYaml : public LexerYaml {
     if (is_new_line(_token) || is_end(_token)) {
       next();
     }
+
     return ex;
   }
 
-  Expected<None> parse_map2(Object& obj) {
+  Expected<None> parse_map(Object& obj) {
+    if (_token == '{') {
+      return parse_flow_map(obj);
+    }
+
     while (_token != 'S' && !is_end(_token) && _token != '<') {
 
       if (is_new_line(_token) || _token == '$') {
@@ -314,27 +292,16 @@ class ParserYaml : public LexerYaml {
 
       if (_token == ':') {
 
-        auto ex = obj.get_field(string);
+        auto ex = obj.get_field(get_word());
         __retry(ex);
 
         auto info = Reflection::reflect(ex.unwrap());
 
         next();
-        if (is_new_line(_token)) {
+        __retry(parse(&info));
+
+        if (_token == '<') {
           next();
-          if (_token == '-') {
-            __retry(parse_seq(&info));
-          } else if (_token == '>') {
-            __retry(parse_ind(&info));
-          }
-        } else {
-          matcher().insert_stop(matcher().columno());
-
-          __retry(parse(&info));
-
-          if (_token == '<') {
-            next();
-          }
         }
       } else {
         return error_token(_token);
@@ -343,7 +310,91 @@ class ParserYaml : public LexerYaml {
     return None();
   }
 
-  Expected<None> parse_map2(Map& map) {
+  // parse "{ key:val, ... }" to an object
+  Expected<None> parse_flow_map(Object& obj) {
+    next();  // skip '{' itself
+
+    size_t level = 0;
+    while (_token != 'S' && !is_end(_token) && _token != '}') {
+
+      if (is_new_line(_token) || _token == '$') {
+        next();
+      }
+
+      if (_token == '>') {
+        ++level;
+        next();
+      } else {
+        while (_token == '<') {
+          if (level > 0) {
+            --level;
+          }
+          next();
+        }
+      }
+
+      if (_token == ':') {
+
+        auto ex = obj.get_field(get_word());
+        __retry(ex);
+
+        auto info = Reflection::reflect(ex.unwrap());
+
+        next();
+        if (!is_new_line(_token) && _token != ',') {
+          __retry(parse(&info));
+        }
+      }
+
+      if (is_new_line(_token)) {
+        next();
+      }
+      if (_token == '>') {
+        ++level;
+        next();
+      } else {
+        while (_token == '<') {
+          if (level > 0) {
+            --level;
+          }
+          next();
+        }
+      }
+      if (_token == ',') {
+        next();
+      }
+      if (is_new_line(_token)) {
+        next();
+      }
+      if (_token == '>') {
+        ++level;
+        next();
+      } else if (_token == '<') {
+        if (level > 0) {
+          --level;
+        }
+        next();
+      }
+    }
+
+    if (_token == '}') {
+      next();
+    }
+    if (is_new_line(_token)) {
+      next();
+    }
+    while (_token == '<' && level-- > 0) {
+      next();
+    }
+
+    return None();
+  }
+
+  Expected<None> parse_map(Map& map) {
+    if (_token == '{') {
+      return parse_flow_map(map);
+    }
+
     while (_token != 'S' && !is_end(_token) && _token != '<') {
 
       if (is_new_line(_token)) {
@@ -357,230 +408,16 @@ class ParserYaml : public LexerYaml {
       auto info_v = Reflection::reflect(val_box.var());
 
       // get a key
-      if (_token == '$') {
-        next();
-        if (_token == ';') {
-          next();
-        }
-        auto ex = info_k.match([this](Bool& b) -> Expected<None> { return b.set(parse_bool(string)); },
-                               [this](Integer& i) -> Expected<None> { return i.set(parse_int(string)); },
-                               [this](Float& f) -> Expected<None> { return f.set(parse_double(string)); },
-                               [this](String& s) -> Expected<None> { return s.set(string); },
-                               [this](Enum& e) -> Expected<None> { return e.parse(string); },
-                               [this](auto&&) -> Expected<None> { return error_match(); });
-        __retry(ex);
-
-      } else if (_token == '?') {
-        next();
-        if (is_new_line(_token)) {
-          next();
-          if (_token == '-') {
-            __retry(parse_seq(&info_k));
-          } else if (_token == '>') {
-            __retry(parse_ind(&info_k));
-          }
-        } else {
-          // matcher().insert_stop(matcher().columno());
-          __retry(parse(&info_k));
-          if (_token == '<') {
-            next();
-          }
-        }
-      } else {
-        return error_token(_token);
-      }
+      __retry(parse(&info_k));
 
       // get a value
       if (_token == ':') {
         next();
 
-        if (is_new_line(_token)) {
-          next();
-          if (_token == '-') {
-            __retry(parse_seq(&info_v));
-          } else if (_token == '>') {
-            __retry(parse_ind(&info_v));
-          }
-        } else {
-          matcher().insert_stop(matcher().columno());
-
-          __retry(parse(&info_v));
-
-          if (_token == '<') {
-            next();
-          }
-        }
-      } else {
-        return error_token(_token);
-      }
-
-      map.insert(key_box.var(), val_box.var());
-    }
-    return None();
-  }
-
-  // key is given in data, now parse ": val ..."
-  /*Expected<None> parse_map(TypeInfo* info) {
-
-    {
-      auto ex = info->get<Object>().get_field(string);
-      __retry(ex);
-
-      auto info_f = Reflection::reflect(ex.unwrap());
-
-      next();
-
-      if (is_new_line(_token)) {
-        next();
-        if (_token != 'S' && !is_end(_token) && _token != '$' &&  //
-            _token != '?' && _token != ':' && _token != '<') {
-          // the key has been already consumed, parse a value from new line
-          __retry(parse(&info_f));
-        }
-      } else if (_token != 'S' && !is_end(_token) &&  //
-                 _token != '?' && _token != ':' && _token != '<') {
-        // the key has been already consumed, parse a value in the same line
-        __retry(parse(&info_f));
-      }
-    }
-
-    // add all other keys and values
-    while (_token != 'S' && !is_end(_token) && _token != '<') {
-
-      if (is_new_line(_token)) {
-        next();
-      }
-
-      // get a key
-      std::string key;
-      if (_token == '$') {
-        next();
-        if (_token == ';') {
-          next();
-        }
-        key = string;
-      } else {
-        return error("Only string keys are supported while parse a yaml map to an object");
-      }
-
-      // get a value
-      if (_token == ':') {
-
-        auto ex = info->get<Object>().get_field(key);
-        __retry(ex);
-
-        auto info_f = Reflection::reflect(ex.unwrap());
-
-        next();
-        if (is_new_line(_token)) {
-          next();
-          if (_token == '-') {
-            __retry(parse_seq(&info_f));
-          } else if (_token == '>') {
-            __retry(parse_ind(&info_f));
-          }
-        } else {
-          matcher().insert_stop(matcher().columno());
-
-          __retry(parse(&info_f));
-
-          if (_token == '<') {
-            next();
-          }
-        }
-      } else {
-        break;
-      }
-    }
-    return None();
-  }
-
-  // key is given in data, now parse ": val ..."
-  Expected<None> parse_map_to_map(Map& map, Var key) {
-    next();
-
-    Box val_box(map.val_type());
-    auto info_v = Reflection::reflect(val_box.var());
-
-    if (is_new_line(_token)) {
-      next();
-      if (_token != 'S' && !is_end(_token) && _token != '$' &&  //
-          _token != '?' && _token != ':' && _token != '<') {
-        // the key has been already consumed, parse a value from new line
         __retry(parse(&info_v));
-      }
-    } else if (_token != 'S' && !is_end(_token) &&  //
-               _token != '?' && _token != ':' && _token != '<') {
-      // the key has been already consumed, parse a value in the same line
-      __retry(parse(&info_v));
-    }
 
-    map.insert(key, val_box.var());
-
-    // add all other keys and values
-    while (_token != 'S' && !is_end(_token) && _token != '<') {
-
-      if (is_new_line(_token)) {
-        next();
-      }
-
-      // get a key
-      Box key_box(map.val_type());
-      auto info_k = Reflection::reflect(key_box.var());
-
-      if (_token == '$') {
-        next();
-        if (_token == ';') {
+        if (_token == '<') {
           next();
-        }
-
-        auto ex = info_k.match([this](Bool& b) -> Expected<None> { return b.set(parse_bool(string)); },
-                               [this](Integer& i) -> Expected<None> { return i.set(parse_int(string)); },
-                               [this](Float& f) -> Expected<None> { return f.set(parse_double(string)); },
-                               [this](String& s) -> Expected<None> { return s.set(string); },
-                               [this](Enum& e) -> Expected<None> { return e.parse(string); },
-                               [this](auto&&) -> Expected<None> { return error_match(); });
-        __retry(ex);
-
-      } else if (_token == '?') {
-        next();
-        if (is_new_line(_token)) {
-          next();
-          if (_token == '-') {
-            __retry(parse_seq(&info_k));
-          } else if (_token == '>') {
-            __retry(parse_ind(&info_k));
-          }
-        } else {
-          matcher().insert_stop(matcher().columno());
-          __retry(parse(&info_k));
-          if (_token == '<') {
-            next();
-          }
-        }
-      } else {
-        return error_token(_token);
-      }
-
-      // get a value
-      if (_token == ':') {
-        next();
-
-        if (is_new_line(_token)) {
-          next();
-          if (_token == '-') {
-            __retry(parse_seq(&info_v));
-          } else if (_token == '>') {
-            __retry(parse_ind(&info_v));
-          }
-        } else {
-          matcher().insert_stop(matcher().columno());
-
-          __retry(parse(&info_v));
-
-          if (_token == '<') {
-            next();
-          }
         }
       } else {
         return error_token(_token);
@@ -589,14 +426,14 @@ class ParserYaml : public LexerYaml {
       map.insert(key_box.var(), val_box.var());
     }
     return None();
-  }*/
+  }
 
-  // parse "{ key:val, ... }"
-  Expected<None> parse_flow_map(TypeInfo* info) {
-    next();
+  // parse "{ key:val, ... }" to a map
+  Expected<None> parse_flow_map(Map& map) {
+    next();  // skip '{' itself
 
     size_t level = 0;
-    while (!is_end(_token) && _token != 'S' && _token != '}') {
+    while (_token != 'S' && !is_end(_token) && _token != '}') {
 
       if (is_new_line(_token)) {
         next();
@@ -614,37 +451,33 @@ class ParserYaml : public LexerYaml {
         }
       }
 
+      Box key_box(map.key_type());
+      Box val_box(map.val_type());
+
+      auto info_k = Reflection::reflect(key_box.var());
+      auto info_v = Reflection::reflect(val_box.var());
+
       // get a key
-      std::string key;
-      if (_token == '$') {
+      __retry(parse(&info_k));
+
+      if (_token == '<') {
         next();
-        if (_token == ';') {
-          next();
-        }
-        key = string;
-      } else {
-        return error("Only strings supported while parse a yaml map");
-        /*
-        if (_token == '[') {
-          // parse_flow_seq(key);
-        } else if (_token == '{') {
-          // parse_flow_map(key);
-        }
-        */
       }
 
       // get a value
       if (_token == ':') {
         next();
-        if (!is_new_line(_token) && _token != ',') {
 
-          auto ex = info->get<Object>().get_field(key);
-          __retry(ex);
+        __retry(parse(&info_v));
 
-          auto info_f = Reflection::reflect(ex.unwrap());
-          __retry(parse(&info_f));
+        if (_token == '<') {
+          next();
         }
+      } else {
+        return error_token(_token);
       }
+
+      map.insert(key_box.var(), val_box.var());
 
       if (is_new_line(_token)) {
         next();

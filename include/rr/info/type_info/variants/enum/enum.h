@@ -15,8 +15,8 @@ struct Enum final : IEnum {
       : _enum(std::make_shared<EnumImpl<T, size>>(value, is_const, all_constants)) {
   }
 
-  Var own_var() const override {
-    return _enum->own_var();
+  Var var() const override {
+    return _enum->var();
   }
 
   std::string_view to_string() const override {

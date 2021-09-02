@@ -1,10 +1,12 @@
 templates: #pathes to template files
-  enum: templates/enum.inja
-  object: templates/object.inja
+  {enum: templates/enum.inja, object: templates/object.inja}}
 
-root_dir: ../generator
+root_dir: !!str "../generator"
 
 input:
-  - config.h
+  [&cf config.h, *cf, *cf, *cf]
+
+
+
 
 output_dir: self_generated

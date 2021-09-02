@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <string_view>
 
 #include "../../expected.h"
@@ -8,8 +9,8 @@
 #include "variants/array/array.h"
 #include "variants/bool.h"
 #include "variants/enum/enum.h"
-#include "variants/float.h"
-#include "variants/integer.h"
+#include "variants/floating/floating.h"
+#include "variants/integer/integer.h"
 #include "variants/map/map.h"
 #include "variants/object.h"
 #include "variants/sequence/sequence.h"
@@ -17,7 +18,7 @@
 
 namespace rr {
 
-#define BASE Variant<Bool, Integer, Float, String, Enum, Object, Array, Sequence, Map>
+#define BASE Variant<Bool, Integer, Floating, String, Enum, Object, Array, Sequence, Map>
 
 /// The sum type contains information about nature of stored value
 ///
@@ -33,7 +34,7 @@ class TypeInfo : public BASE {
   TypeInfo(Integer value) : BASE(value) {  // NOLINT implicit constructor
   }
 
-  TypeInfo(Float value) : BASE(value) {  // NOLINT implicit constructor
+  TypeInfo(Floating value) : BASE(value) {  // NOLINT implicit constructor
   }
 
   TypeInfo(String value) : BASE(value) {  // NOLINT implicit constructor
@@ -52,6 +53,30 @@ class TypeInfo : public BASE {
   }
 
   TypeInfo(Map value) : BASE(value) {  // NOLINT implicit constructor
+  }
+
+  std::string_view what_is() {
+    return match([](Bool&) -> std::string_view { return "Bool"; },          //
+                 [](Integer&) -> std::string_view { return "Integer"; },    //
+                 [](Floating&) -> std::string_view { return "Float"; },     //
+                 [](String&) -> std::string_view { return "String"; },      //
+                 [](Enum&) -> std::string_view { return "Enum"; },          //
+                 [](Object&) -> std::string_view { return "Object"; },      //
+                 [](Array&) -> std::string_view { return "Array"; },        //
+                 [](Sequence&) -> std::string_view { return "Sequence"; },  //
+                 [](Map&) -> std::string_view { return "Map"; });
+  }
+
+  Var var() {
+    return match([](Bool& b) -> Var { return b.var(); },          //
+                 [](Integer& i) -> Var { return i.var(); },       //
+                 [](Floating& f) -> Var { return f.var(); },      //
+                 [](String& s) -> Var { return s.var(); },        //
+                 [](Enum& e) -> Var { return e.var(); },          //
+                 [](Object& o) -> Var { return o.var(); },        //
+                 [](Array& a) -> Var { return a.own_var(); },     //
+                 [](Sequence& s) -> Var { return s.own_var(); },  //
+                 [](Map& m) -> Var { return m.own_var(); });
   }
 };
 

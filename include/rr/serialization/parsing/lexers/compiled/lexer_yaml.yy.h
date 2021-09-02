@@ -64,8 +64,9 @@ class LexerYaml : public reflex::AbstractLexer<reflex::Matcher> {
   }
 
  protected:
-  // string to accumulate YAML scalars
-  std::string string;
+  inline std::string& get_word() {
+    return _word;
+  }
 
   // count number of newlines matched
   size_t newlines()
@@ -98,42 +99,42 @@ class LexerYaml : public reflex::AbstractLexer<reflex::Matcher> {
           spaces -= stops.back();
           stops.push_back(stops.back() + indent);
         }
-        string.append(spaces - indent, ' ');
+        _word.append(spaces - indent, ' ');
       }
     }
   }
 
   // clear the string scalar before accumulating a new scalar
   void clear() {
-    string.clear();
+    _word.clear();
   }
 
   // add one or n chars c to the string
   void add(char c, size_t n = 1) {
     while (n-- > 0)
-      string.push_back(c);
+      _word.push_back(c);
   }
 
   // add indent to the string, prefixed with a \n if nl is true
   void add_indent() {
     if (nl)
-      string.push_back('\n');
+      _word.push_back('\n');
     size_t stop = matcher().last_stop();
     if (size() > stop)
-      string.append(size() - stop, ' ');
+      _word.append(size() - stop, ' ');
   }
 
   // if nl is true, add a \n to the string then reset nl
   void add_newline() {
     if (nl) {
-      string.push_back('\n');
+      _word.push_back('\n');
       nl = false;
     }
   }
 
   // add sp spaces to the string
   void add_space() {
-    string.append(sp, ' ');
+    _word.append(sp, ' ');
     sp = 0;
   }
 
@@ -143,13 +144,13 @@ class LexerYaml : public reflex::AbstractLexer<reflex::Matcher> {
     switch (mode)
     {
       case CLIP:
-        while (!string.empty() && string.back() == '\n')
-          string.pop_back();
-        string.push_back('\n');
+        while (!_word.empty() && _word.back() == '\n')
+          _word.pop_back();
+        _word.push_back('\n');
         break;
       case STRIP:
-        while (!string.empty() && string.back() == '\n')
-          string.pop_back();
+        while (!_word.empty() && _word.back() == '\n')
+          _word.pop_back();
         break;
       case KEEP:
         break;
@@ -161,6 +162,9 @@ class LexerYaml : public reflex::AbstractLexer<reflex::Matcher> {
   bool nl;                         // insert newline in folded block scalar
   enum { CLIP, STRIP, KEEP } mode; // chomp mode
 
+ private:
+  std::string _word; // string to accumulate YAML scalars
+
  public:
   typedef reflex::AbstractLexer<reflex::Matcher> AbstractBaseLexer;
   LexerYaml(
@@ -169,7 +173,7 @@ class LexerYaml : public reflex::AbstractLexer<reflex::Matcher> {
     :
       AbstractBaseLexer(input, os)
   {
-#line 158 "include/rr/serialization/parsing/lexers/yaml.l"
+#line 162 "include/rr/serialization/parsing/lexers/yaml.l"
 
   indent = 0;
   nl = false;
@@ -245,7 +249,7 @@ class LexerYaml : public reflex::AbstractLexer<reflex::Matcher> {
 // YAML test files:
 // - https://www.genivia.com/files/yamltests.zip
 
-#line 157 "include/rr/serialization/parsing/lexers/yaml.l"
+#line 161 "include/rr/serialization/parsing/lexers/yaml.l"
 // Lexer class initialization at construction
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -293,114 +297,114 @@ int LexerYaml::lex(void)
               out().put(matcher().input());
             }
             break;
-          case 1: // rule include/rr/serialization/parsing/lexers/yaml.l:187: {direct} :
-#line 187 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 1: // rule include/rr/serialization/parsing/lexers/yaml.l:191: {direct} :
+#line 191 "include/rr/serialization/parsing/lexers/yaml.l"
 { /* ignore directive */ }
             break;
-          case 2: // rule include/rr/serialization/parsing/lexers/yaml.l:188: {comment} :
-#line 188 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 2: // rule include/rr/serialization/parsing/lexers/yaml.l:192: {comment} :
+#line 192 "include/rr/serialization/parsing/lexers/yaml.l"
 { /* ignore comment */ }
             break;
-          case 3: // rule include/rr/serialization/parsing/lexers/yaml.l:189: \h* {lf} :
-#line 189 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 3: // rule include/rr/serialization/parsing/lexers/yaml.l:193: \h* {lf} :
+#line 193 "include/rr/serialization/parsing/lexers/yaml.l"
 { return ';'; }
             break;
-          case 4: // rule include/rr/serialization/parsing/lexers/yaml.l:190: \h* {bl} :
-#line 190 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 4: // rule include/rr/serialization/parsing/lexers/yaml.l:194: \h* {bl} :
+#line 194 "include/rr/serialization/parsing/lexers/yaml.l"
 { return '='; }
             break;
-          case 5: // rule include/rr/serialization/parsing/lexers/yaml.l:191: ^ \h+ \i :
-#line 191 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 5: // rule include/rr/serialization/parsing/lexers/yaml.l:195: ^ \h+ \i :
+#line 195 "include/rr/serialization/parsing/lexers/yaml.l"
 { return '>'; }
             break;
-          case 6: // rule include/rr/serialization/parsing/lexers/yaml.l:192: ^ \h+ \j :
-          case 7: // rule include/rr/serialization/parsing/lexers/yaml.l:193: \j :
-#line 193 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 6: // rule include/rr/serialization/parsing/lexers/yaml.l:196: ^ \h+ \j :
+          case 7: // rule include/rr/serialization/parsing/lexers/yaml.l:197: \j :
+#line 197 "include/rr/serialization/parsing/lexers/yaml.l"
 { return '<'; }
             break;
-          case 8: // rule include/rr/serialization/parsing/lexers/yaml.l:194: \h+ :
-#line 194 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 8: // rule include/rr/serialization/parsing/lexers/yaml.l:198: \h+ :
+#line 198 "include/rr/serialization/parsing/lexers/yaml.l"
 { /* ignore spaces and tabs */ }
             break;
-          case 9: // rule include/rr/serialization/parsing/lexers/yaml.l:195: "---" {br} :
-#line 195 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 9: // rule include/rr/serialization/parsing/lexers/yaml.l:199: "---" {br} :
+#line 199 "include/rr/serialization/parsing/lexers/yaml.l"
 { return 'S'; }
             break;
-          case 10: // rule include/rr/serialization/parsing/lexers/yaml.l:196: "..." {br} :
-#line 196 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 10: // rule include/rr/serialization/parsing/lexers/yaml.l:200: "..." {br} :
+#line 200 "include/rr/serialization/parsing/lexers/yaml.l"
 { return 'E'; }
             break;
-          case 11: // rule include/rr/serialization/parsing/lexers/yaml.l:197: "-" :
-#line 197 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 11: // rule include/rr/serialization/parsing/lexers/yaml.l:201: "-" :
+#line 201 "include/rr/serialization/parsing/lexers/yaml.l"
 { return '-'; }
             break;
-          case 12: // rule include/rr/serialization/parsing/lexers/yaml.l:198: "?" :
-#line 198 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 12: // rule include/rr/serialization/parsing/lexers/yaml.l:202: "?" :
+#line 202 "include/rr/serialization/parsing/lexers/yaml.l"
 { return '?'; }
             break;
-          case 13: // rule include/rr/serialization/parsing/lexers/yaml.l:199: ":" :
-#line 199 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 13: // rule include/rr/serialization/parsing/lexers/yaml.l:203: ":" :
+#line 203 "include/rr/serialization/parsing/lexers/yaml.l"
 { return ':'; }
             break;
-          case 14: // rule include/rr/serialization/parsing/lexers/yaml.l:200: "," :
-#line 200 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 14: // rule include/rr/serialization/parsing/lexers/yaml.l:204: "," :
+#line 204 "include/rr/serialization/parsing/lexers/yaml.l"
 { return ','; }
             break;
-          case 15: // rule include/rr/serialization/parsing/lexers/yaml.l:201: "[" :
-#line 201 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 15: // rule include/rr/serialization/parsing/lexers/yaml.l:205: "[" :
+#line 205 "include/rr/serialization/parsing/lexers/yaml.l"
 { return '['; }
             break;
-          case 16: // rule include/rr/serialization/parsing/lexers/yaml.l:202: "]" :
-#line 202 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 16: // rule include/rr/serialization/parsing/lexers/yaml.l:206: "]" :
+#line 206 "include/rr/serialization/parsing/lexers/yaml.l"
 { return ']'; }
             break;
-          case 17: // rule include/rr/serialization/parsing/lexers/yaml.l:203: "{" :
-#line 203 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 17: // rule include/rr/serialization/parsing/lexers/yaml.l:207: "{" :
+#line 207 "include/rr/serialization/parsing/lexers/yaml.l"
 { return '{'; }
             break;
-          case 18: // rule include/rr/serialization/parsing/lexers/yaml.l:204: "}" :
-#line 204 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 18: // rule include/rr/serialization/parsing/lexers/yaml.l:208: "}" :
+#line 208 "include/rr/serialization/parsing/lexers/yaml.l"
 { return '}'; }
             break;
-          case 19: // rule include/rr/serialization/parsing/lexers/yaml.l:205: "'" :
-#line 205 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 19: // rule include/rr/serialization/parsing/lexers/yaml.l:209: "'" :
+#line 209 "include/rr/serialization/parsing/lexers/yaml.l"
 { clear(); start(APOS); }
             break;
-          case 20: // rule include/rr/serialization/parsing/lexers/yaml.l:206: \" :
-#line 206 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 20: // rule include/rr/serialization/parsing/lexers/yaml.l:210: \" :
+#line 210 "include/rr/serialization/parsing/lexers/yaml.l"
 { clear(); start(QUOT); }
             break;
-          case 21: // rule include/rr/serialization/parsing/lexers/yaml.l:207: "|"  \d* {nl} :
-#line 207 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 21: // rule include/rr/serialization/parsing/lexers/yaml.l:211: "|"  \d* {nl} :
+#line 211 "include/rr/serialization/parsing/lexers/yaml.l"
 { clear(); parse_indent(1); mode = CLIP;  start(PRES); }
             break;
-          case 22: // rule include/rr/serialization/parsing/lexers/yaml.l:208: "|-" \d* {nl} :
-#line 208 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 22: // rule include/rr/serialization/parsing/lexers/yaml.l:212: "|-" \d* {nl} :
+#line 212 "include/rr/serialization/parsing/lexers/yaml.l"
 { clear(); parse_indent(2); mode = STRIP; start(PRES); }
             break;
-          case 23: // rule include/rr/serialization/parsing/lexers/yaml.l:209: "|+" \d* {nl} :
-#line 209 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 23: // rule include/rr/serialization/parsing/lexers/yaml.l:213: "|+" \d* {nl} :
+#line 213 "include/rr/serialization/parsing/lexers/yaml.l"
 { clear(); parse_indent(2); mode = KEEP;  start(PRES); }
             break;
-          case 24: // rule include/rr/serialization/parsing/lexers/yaml.l:210: ">"  \d* {nl} :
-#line 210 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 24: // rule include/rr/serialization/parsing/lexers/yaml.l:214: ">"  \d* {nl} :
+#line 214 "include/rr/serialization/parsing/lexers/yaml.l"
 { clear(); parse_indent(1); mode = CLIP;  start(FOLD); }
             break;
-          case 25: // rule include/rr/serialization/parsing/lexers/yaml.l:211: ">-" \d* {nl} :
-#line 211 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 25: // rule include/rr/serialization/parsing/lexers/yaml.l:215: ">-" \d* {nl} :
+#line 215 "include/rr/serialization/parsing/lexers/yaml.l"
 { clear(); parse_indent(2); mode = STRIP; start(FOLD); }
             break;
-          case 26: // rule include/rr/serialization/parsing/lexers/yaml.l:212: ">+" \d* {nl} :
-#line 212 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 26: // rule include/rr/serialization/parsing/lexers/yaml.l:216: ">+" \d* {nl} :
+#line 216 "include/rr/serialization/parsing/lexers/yaml.l"
 { clear(); parse_indent(2); mode = KEEP;  start(FOLD); }
             break;
-          case 27: // rule include/rr/serialization/parsing/lexers/yaml.l:213: {tag} :
-#line 213 "include/rr/serialization/parsing/lexers/yaml.l"
-{ return chr(); }
+          case 27: // rule include/rr/serialization/parsing/lexers/yaml.l:217: {tag} :
+#line 217 "include/rr/serialization/parsing/lexers/yaml.l"
+{ _word = str(); return chr(); }
             break;
-          case 28: // rule include/rr/serialization/parsing/lexers/yaml.l:214: {scalar} :
-#line 214 "include/rr/serialization/parsing/lexers/yaml.l"
-{ string = str(); return '$'; }
+          case 28: // rule include/rr/serialization/parsing/lexers/yaml.l:218: {scalar} :
+#line 218 "include/rr/serialization/parsing/lexers/yaml.l"
+{ _word = str(); return '$'; }
 
             break;
         }
@@ -419,28 +423,28 @@ int LexerYaml::lex(void)
               out().put(matcher().input());
             }
             break;
-          case 1: // rule include/rr/serialization/parsing/lexers/yaml.l:217: ' :
-#line 217 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 1: // rule include/rr/serialization/parsing/lexers/yaml.l:221: ' :
+#line 221 "include/rr/serialization/parsing/lexers/yaml.l"
 { start(INITIAL); return '$'; }
             break;
-          case 2: // rule include/rr/serialization/parsing/lexers/yaml.l:218: '' :
-#line 218 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 2: // rule include/rr/serialization/parsing/lexers/yaml.l:222: '' :
+#line 222 "include/rr/serialization/parsing/lexers/yaml.l"
 { add('\''); }
             break;
-          case 3: // rule include/rr/serialization/parsing/lexers/yaml.l:244: ^ \h+ \k? :
-#line 244 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 3: // rule include/rr/serialization/parsing/lexers/yaml.l:248: ^ \h+ \k? :
+#line 248 "include/rr/serialization/parsing/lexers/yaml.l"
 { /* ignore nodent/undent */ }
             break;
-          case 4: // rule include/rr/serialization/parsing/lexers/yaml.l:245: \h* {lf} :
-#line 245 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 4: // rule include/rr/serialization/parsing/lexers/yaml.l:249: \h* {lf} :
+#line 249 "include/rr/serialization/parsing/lexers/yaml.l"
 { add(' '); }
             break;
-          case 5: // rule include/rr/serialization/parsing/lexers/yaml.l:246: {bl} :
-#line 246 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 5: // rule include/rr/serialization/parsing/lexers/yaml.l:250: {bl} :
+#line 250 "include/rr/serialization/parsing/lexers/yaml.l"
 { add('\n', newlines() - 1); }
             break;
-          case 6: // rule include/rr/serialization/parsing/lexers/yaml.l:247: . :
-#line 247 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 6: // rule include/rr/serialization/parsing/lexers/yaml.l:251: . :
+#line 251 "include/rr/serialization/parsing/lexers/yaml.l"
 { add(wchr()); }
             break;
         }
@@ -459,96 +463,96 @@ int LexerYaml::lex(void)
               out().put(matcher().input());
             }
             break;
-          case 1: // rule include/rr/serialization/parsing/lexers/yaml.l:222: \\ {lf} :
-#line 222 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 1: // rule include/rr/serialization/parsing/lexers/yaml.l:226: \\ {lf} :
+#line 226 "include/rr/serialization/parsing/lexers/yaml.l"
 { /* ignore \LF */ }
             break;
-          case 2: // rule include/rr/serialization/parsing/lexers/yaml.l:223: \" :
-#line 223 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 2: // rule include/rr/serialization/parsing/lexers/yaml.l:227: \" :
+#line 227 "include/rr/serialization/parsing/lexers/yaml.l"
 { start(INITIAL); return '$'; }
             break;
-          case 3: // rule include/rr/serialization/parsing/lexers/yaml.l:224: \\ 0 :
-#line 224 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 3: // rule include/rr/serialization/parsing/lexers/yaml.l:228: \\ 0 :
+#line 228 "include/rr/serialization/parsing/lexers/yaml.l"
 { add('\0'); }
             break;
-          case 4: // rule include/rr/serialization/parsing/lexers/yaml.l:225: \\ a :
-#line 225 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 4: // rule include/rr/serialization/parsing/lexers/yaml.l:229: \\ a :
+#line 229 "include/rr/serialization/parsing/lexers/yaml.l"
 { add('\a'); }
             break;
-          case 5: // rule include/rr/serialization/parsing/lexers/yaml.l:226: \\ b :
-#line 226 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 5: // rule include/rr/serialization/parsing/lexers/yaml.l:230: \\ b :
+#line 230 "include/rr/serialization/parsing/lexers/yaml.l"
 { add('\b'); }
             break;
-          case 6: // rule include/rr/serialization/parsing/lexers/yaml.l:227: \\ t :
-#line 227 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 6: // rule include/rr/serialization/parsing/lexers/yaml.l:231: \\ t :
+#line 231 "include/rr/serialization/parsing/lexers/yaml.l"
 { add('\t'); }
             break;
-          case 7: // rule include/rr/serialization/parsing/lexers/yaml.l:228: \\ n :
-#line 228 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 7: // rule include/rr/serialization/parsing/lexers/yaml.l:232: \\ n :
+#line 232 "include/rr/serialization/parsing/lexers/yaml.l"
 { add('\n'); }
             break;
-          case 8: // rule include/rr/serialization/parsing/lexers/yaml.l:229: \\ v :
-#line 229 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 8: // rule include/rr/serialization/parsing/lexers/yaml.l:233: \\ v :
+#line 233 "include/rr/serialization/parsing/lexers/yaml.l"
 { add('\v'); }
             break;
-          case 9: // rule include/rr/serialization/parsing/lexers/yaml.l:230: \\ f :
-#line 230 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 9: // rule include/rr/serialization/parsing/lexers/yaml.l:234: \\ f :
+#line 234 "include/rr/serialization/parsing/lexers/yaml.l"
 { add('\f'); }
             break;
-          case 10: // rule include/rr/serialization/parsing/lexers/yaml.l:231: \\ r :
-#line 231 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 10: // rule include/rr/serialization/parsing/lexers/yaml.l:235: \\ r :
+#line 235 "include/rr/serialization/parsing/lexers/yaml.l"
 { add('\r'); }
             break;
-          case 11: // rule include/rr/serialization/parsing/lexers/yaml.l:232: \\ e :
-#line 232 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 11: // rule include/rr/serialization/parsing/lexers/yaml.l:236: \\ e :
+#line 236 "include/rr/serialization/parsing/lexers/yaml.l"
 { add(0x1b); }
             break;
-          case 12: // rule include/rr/serialization/parsing/lexers/yaml.l:233: \\ N :
-#line 233 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 12: // rule include/rr/serialization/parsing/lexers/yaml.l:237: \\ N :
+#line 237 "include/rr/serialization/parsing/lexers/yaml.l"
 { add(0x85); }
             break;
-          case 13: // rule include/rr/serialization/parsing/lexers/yaml.l:234: \\ _ :
-#line 234 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 13: // rule include/rr/serialization/parsing/lexers/yaml.l:238: \\ _ :
+#line 238 "include/rr/serialization/parsing/lexers/yaml.l"
 { add(0xa0); }
             break;
-          case 14: // rule include/rr/serialization/parsing/lexers/yaml.l:235: \\ L :
-#line 235 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 14: // rule include/rr/serialization/parsing/lexers/yaml.l:239: \\ L :
+#line 239 "include/rr/serialization/parsing/lexers/yaml.l"
 { add(0x2028); }
             break;
-          case 15: // rule include/rr/serialization/parsing/lexers/yaml.l:236: \\ P :
-#line 236 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 15: // rule include/rr/serialization/parsing/lexers/yaml.l:240: \\ P :
+#line 240 "include/rr/serialization/parsing/lexers/yaml.l"
 { add(0x2029); }
             break;
-          case 16: // rule include/rr/serialization/parsing/lexers/yaml.l:237: \\ x {h2} :
-#line 237 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 16: // rule include/rr/serialization/parsing/lexers/yaml.l:241: \\ x {h2} :
+#line 241 "include/rr/serialization/parsing/lexers/yaml.l"
 { add(strtoul(text() + 2, NULL, 16)); }
             break;
-          case 17: // rule include/rr/serialization/parsing/lexers/yaml.l:238: \\ u {h4} :
-#line 238 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 17: // rule include/rr/serialization/parsing/lexers/yaml.l:242: \\ u {h4} :
+#line 242 "include/rr/serialization/parsing/lexers/yaml.l"
 { add(strtoul(text() + 2, NULL, 16)); }
             break;
-          case 18: // rule include/rr/serialization/parsing/lexers/yaml.l:239: \\ U {h8} :
-#line 239 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 18: // rule include/rr/serialization/parsing/lexers/yaml.l:243: \\ U {h8} :
+#line 243 "include/rr/serialization/parsing/lexers/yaml.l"
 { add(strtoul(text() + 2, NULL, 16)); }
             break;
-          case 19: // rule include/rr/serialization/parsing/lexers/yaml.l:240: \\ . :
-#line 240 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 19: // rule include/rr/serialization/parsing/lexers/yaml.l:244: \\ . :
+#line 244 "include/rr/serialization/parsing/lexers/yaml.l"
 { add(str()[1]); }
             break;
-          case 20: // rule include/rr/serialization/parsing/lexers/yaml.l:244: ^ \h+ \k? :
-#line 244 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 20: // rule include/rr/serialization/parsing/lexers/yaml.l:248: ^ \h+ \k? :
+#line 248 "include/rr/serialization/parsing/lexers/yaml.l"
 { /* ignore nodent/undent */ }
             break;
-          case 21: // rule include/rr/serialization/parsing/lexers/yaml.l:245: \h* {lf} :
-#line 245 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 21: // rule include/rr/serialization/parsing/lexers/yaml.l:249: \h* {lf} :
+#line 249 "include/rr/serialization/parsing/lexers/yaml.l"
 { add(' '); }
             break;
-          case 22: // rule include/rr/serialization/parsing/lexers/yaml.l:246: {bl} :
-#line 246 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 22: // rule include/rr/serialization/parsing/lexers/yaml.l:250: {bl} :
+#line 250 "include/rr/serialization/parsing/lexers/yaml.l"
 { add('\n', newlines() - 1); }
             break;
-          case 23: // rule include/rr/serialization/parsing/lexers/yaml.l:247: . :
-#line 247 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 23: // rule include/rr/serialization/parsing/lexers/yaml.l:251: . :
+#line 251 "include/rr/serialization/parsing/lexers/yaml.l"
 { add(wchr()); }
             break;
         }
@@ -567,8 +571,8 @@ int LexerYaml::lex(void)
               out().put(matcher().input());
             }
             break;
-          case 1: // rule include/rr/serialization/parsing/lexers/yaml.l:251: ^ \h+ \i :
-#line 251 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 1: // rule include/rr/serialization/parsing/lexers/yaml.l:255: ^ \h+ \i :
+#line 255 "include/rr/serialization/parsing/lexers/yaml.l"
 { adjust_indent(); start(PBLK); }
             break;
         }
@@ -587,8 +591,8 @@ int LexerYaml::lex(void)
               out().put(matcher().input());
             }
             break;
-          case 1: // rule include/rr/serialization/parsing/lexers/yaml.l:255: ^ \h+ \i :
-#line 255 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 1: // rule include/rr/serialization/parsing/lexers/yaml.l:259: ^ \h+ \i :
+#line 259 "include/rr/serialization/parsing/lexers/yaml.l"
 { adjust_indent(); sp = 0; nl = false; start(FBLK); }
             break;
         }
@@ -607,29 +611,29 @@ int LexerYaml::lex(void)
               out().put(matcher().input());
             }
             break;
-          case 1: // rule include/rr/serialization/parsing/lexers/yaml.l:259: {lf} :
-#line 259 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 1: // rule include/rr/serialization/parsing/lexers/yaml.l:263: {lf} :
+#line 263 "include/rr/serialization/parsing/lexers/yaml.l"
 { add('\n'); }
             break;
-          case 2: // rule include/rr/serialization/parsing/lexers/yaml.l:260: {bl} :
-#line 260 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 2: // rule include/rr/serialization/parsing/lexers/yaml.l:264: {bl} :
+#line 264 "include/rr/serialization/parsing/lexers/yaml.l"
 { add('\n', newlines()); }
             break;
-          case 3: // rule include/rr/serialization/parsing/lexers/yaml.l:261: ^ \h* \j :
-          case 4: // rule include/rr/serialization/parsing/lexers/yaml.l:262: \j :
-#line 262 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 3: // rule include/rr/serialization/parsing/lexers/yaml.l:265: ^ \h* \j :
+          case 4: // rule include/rr/serialization/parsing/lexers/yaml.l:266: \j :
+#line 266 "include/rr/serialization/parsing/lexers/yaml.l"
 { chomp(); start(INITIAL); return '$'; }
             break;
-          case 5: // rule include/rr/serialization/parsing/lexers/yaml.l:263: ^ \h+ :
-#line 263 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 5: // rule include/rr/serialization/parsing/lexers/yaml.l:267: ^ \h+ :
+#line 267 "include/rr/serialization/parsing/lexers/yaml.l"
 { }
             break;
-          case 6: // rule include/rr/serialization/parsing/lexers/yaml.l:264: ^ \h+ \k :
-#line 264 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 6: // rule include/rr/serialization/parsing/lexers/yaml.l:268: ^ \h+ \k :
+#line 268 "include/rr/serialization/parsing/lexers/yaml.l"
 { add_indent(); }
             break;
-          case 7: // rule include/rr/serialization/parsing/lexers/yaml.l:265: . :
-#line 265 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 7: // rule include/rr/serialization/parsing/lexers/yaml.l:269: . :
+#line 269 "include/rr/serialization/parsing/lexers/yaml.l"
 { add(chr()); }
             break;
         }
@@ -648,33 +652,33 @@ int LexerYaml::lex(void)
               out().put(matcher().input());
             }
             break;
-          case 1: // rule include/rr/serialization/parsing/lexers/yaml.l:269: \h+ {lf} :
-#line 269 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 1: // rule include/rr/serialization/parsing/lexers/yaml.l:273: \h+ {lf} :
+#line 273 "include/rr/serialization/parsing/lexers/yaml.l"
 { sp = size() - 1 - (*(matcher().end() - 2) == '\r'); }
             break;
-          case 2: // rule include/rr/serialization/parsing/lexers/yaml.l:270: {lf} :
-#line 270 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 2: // rule include/rr/serialization/parsing/lexers/yaml.l:274: {lf} :
+#line 274 "include/rr/serialization/parsing/lexers/yaml.l"
 { sp = 1; }
             break;
-          case 3: // rule include/rr/serialization/parsing/lexers/yaml.l:271: {bl} :
-#line 271 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 3: // rule include/rr/serialization/parsing/lexers/yaml.l:275: {bl} :
+#line 275 "include/rr/serialization/parsing/lexers/yaml.l"
 { add('\n', newlines() - 1); }
             break;
-          case 4: // rule include/rr/serialization/parsing/lexers/yaml.l:272: ^ \h* \j :
-          case 5: // rule include/rr/serialization/parsing/lexers/yaml.l:273: \j :
-#line 273 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 4: // rule include/rr/serialization/parsing/lexers/yaml.l:276: ^ \h* \j :
+          case 5: // rule include/rr/serialization/parsing/lexers/yaml.l:277: \j :
+#line 277 "include/rr/serialization/parsing/lexers/yaml.l"
 { chomp(); start(INITIAL); return '$'; }
             break;
-          case 6: // rule include/rr/serialization/parsing/lexers/yaml.l:274: ^ \h+ :
-#line 274 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 6: // rule include/rr/serialization/parsing/lexers/yaml.l:278: ^ \h+ :
+#line 278 "include/rr/serialization/parsing/lexers/yaml.l"
 { add_newline(); }
             break;
-          case 7: // rule include/rr/serialization/parsing/lexers/yaml.l:275: ^ \h+ \k :
-#line 275 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 7: // rule include/rr/serialization/parsing/lexers/yaml.l:279: ^ \h+ \k :
+#line 279 "include/rr/serialization/parsing/lexers/yaml.l"
 { sp = 0; nl = true; add_indent(); }
             break;
-          case 8: // rule include/rr/serialization/parsing/lexers/yaml.l:276: . :
-#line 276 "include/rr/serialization/parsing/lexers/yaml.l"
+          case 8: // rule include/rr/serialization/parsing/lexers/yaml.l:280: . :
+#line 280 "include/rr/serialization/parsing/lexers/yaml.l"
 { add_space(); add(chr()); }
             break;
         }

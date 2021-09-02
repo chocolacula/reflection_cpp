@@ -17,7 +17,8 @@
 namespace rr {
 
 struct TypeId {
-  TypeId() = delete;
+  TypeId() : _id(0) {
+  }
 
   /// proxy function for using with implicit type in TypeId::get<T>() way without argument
   template <typename T>

@@ -36,6 +36,10 @@ struct String {
     return None();
   }
 
+  Var var() const {
+    return _var;
+  }
+
  private:
   const Var _var;
   static const inline TypeId _shared_type = TypeId::get<std::string_view>();

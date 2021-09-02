@@ -13,7 +13,7 @@ struct EnumImpl final : public IEnum {
       : _value(value), _is_const(is_const), _all_constants(all_constants) {
   }
 
-  Var own_var() const override {
+  Var var() const override {
     return Var(_value, TypeId::get<T>(), _is_const);
   }
 
