@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "enum.h"
+#include "color.h"
 #include "rr/attributes.h"
 
 RR_OBJECT()

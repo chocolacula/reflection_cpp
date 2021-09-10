@@ -1,17 +1,10 @@
-#include <type_traits>
+// #pragma once is deliberately missed
 
-#include "../../expected.h"
+#include "../../tools/traits.h"
 
-template <typename T>
-struct is_expected : std::false_type {};
-
-template <typename T>
-inline constexpr bool is_expected_v = is_expected<T>::value;  // NOLINT std like name
-
-template <typename T, typename ErrorT>
-struct is_expected<rr::Expected<T, ErrorT>> : std::true_type {};
-
-/// Note: don't forget #undef it
+// return | macro similar to behavior of 'try' keyword but without 'catch'
+//   try  | if some error occurred, it will be returned on upper level
+// Note: don't forget to undef it
 #define __retry(x)                                                                           \
   {                                                                                          \
     auto __ex___ = x;                                                                        \

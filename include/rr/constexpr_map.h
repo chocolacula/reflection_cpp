@@ -1,8 +1,9 @@
 #pragma once
 
-#include <vector>
+#include <array>
 
 #include "expected.h"
+#include "tools/format.h"
 
 namespace rr {
 

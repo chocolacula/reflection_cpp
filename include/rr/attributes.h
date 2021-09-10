@@ -1,10 +1,10 @@
 #pragma once
 
-#define RR_ENUM
+#define CONCAT(x, y) x y
 
 // options are: WithBase, WithPrivate
-#define RR_OBJECT(options...)
+#define RR_REFLECT(options) [[clang::annotate(CONCAT("re:reflect:", options))]]
 
-#define RR_ALIAS(name)
+#define RR_ALIAS(name) [[clang::annotate(CONCAT("re:alias:", name))]]
 
 #define RR_EXCLUDE

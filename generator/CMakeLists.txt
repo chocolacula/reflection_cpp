@@ -20,14 +20,35 @@ include_directories(tclap/include)
 include_directories(RE-flex/include)
 link_directories(RE-flex/lib)
 
+
+# include_directories(llvm-project/clang/include)
+# include_directories(llvm-project/llvm/include)
+# set(LLVM_LINK_COMPONENTS support)
+
+set( LLVM_LINK_COMPONENTS Option Support)
+
+find_package(LLVM REQUIRED)
+include_directories(${LLVM_INCLUDE_DIR})
+link_directories(${LLVM_LIBRARY_DIR})
+
 set(SOURCES
-        # parsing/lexers/compiled/cpp_source.yy.cpp
-        # parsing/lexers/compiled/json.yy.cpp
         main.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-target_link_libraries(${PROJECT_NAME} libreflex.a)
+target_link_libraries(${PROJECT_NAME} PRIVATE reflex)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+${LLVM_LIBRARY_DIR}/libclang-cpp.so.10
+LLVM
+clangAST
+clangBasic
+clangDriver
+clangFrontend
+clangRewriteFrontend
+clangSerialization
+clangStaticAnalyzerFrontend
+clangTooling
+clangToolingSyntax)
 
 configure_file(config.yaml ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config.yaml COPYONLY)
 configure_file(templates/object.inja ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/templates/object.inja COPYONLY)

@@ -17,8 +17,9 @@ struct TypeActions<Config> {
 
     // clang-format off
     return Object(Var(p, is_const), {
-      {"templates", Var(&p->templates)},
       {"root_dir", Var(&p->root_dir)},
+      {"compdb_dir", Var(&p->compdb_dir)},
+      {"templates", Var(&p->templates)},
       {"input", Var(&p->input)},
       {"output_dir", Var(&p->output_dir)},
     });

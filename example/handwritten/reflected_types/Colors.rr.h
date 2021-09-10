@@ -1,13 +1,13 @@
 #pragma once
 
-#include <string_view>
-
 #include "rr/constexpr_map.h"
 #include "rr/expected.h"
+#include "rr/reflection/the_great_table.h"
+#include "rr/types/common_actions.h"
 #include "rr/types/type_actions.h"
 
-// from input parameter
-#include "../../enum.h"
+// injected
+#include "../../data/color.h"
 
 namespace rr {
 
@@ -36,7 +36,7 @@ TypeId TypeId::get(Colors* /*unused*/) {
                                                  &CommonActions<Colors>::type_size,    //
                                                  &CommonActions<Colors>::call_new,     //
                                                  &CommonActions<Colors>::call_delete,  //
-                                                 &CommonActions<Bicycle>::copy)));
+                                                 &CommonActions<Colors>::copy)));
   return id;
 }
 

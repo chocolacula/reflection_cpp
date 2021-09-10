@@ -1,11 +1,11 @@
 #pragma once
 
+#include "access.h"
+
 namespace rr {
 
 class FieldInfo {
  public:
-  enum class Access {kPublic, kProtected, kPrivate};
-
   template <typename T>
   constexpr FieldInfo() {
   }

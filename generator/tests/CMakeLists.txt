@@ -16,7 +16,6 @@ link_directories(../RE-flex/lib)
 add_definitions(-DSOURCE_DIR="${PROJECT_SOURCE_DIR}")
 
 set(SOURCES
-  ../parsing/lexers/compiled/cpp_source.yy.cpp
   main.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})

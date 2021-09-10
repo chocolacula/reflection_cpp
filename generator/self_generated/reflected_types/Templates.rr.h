@@ -31,7 +31,7 @@ TypeId TypeId::get(Config::Templates* /*unused*/) {
                                                  &CommonActions<Config::Templates>::type_size,    //
                                                  &CommonActions<Config::Templates>::call_new,     //
                                                  &CommonActions<Config::Templates>::call_delete,  //
-                                                 &CommonActions<Config>::copy)));
+                                                 &CommonActions<Config::Templates>::copy)));
   return id;
 }
 

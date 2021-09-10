@@ -38,6 +38,9 @@
 // - https://www.genivia.com/files/yamltests.zip
 
 %option lexer=LexerYaml
+%option namespace=rf_yaml
+
+%o fast freespace dotall unicode noline
 
 %top{
   #include <cstdlib> // strtoul()
@@ -165,8 +168,6 @@
   sp = 0;
   mode = CLIP;
 }
-
-%o fast freespace dotall unicode
 
 %x APOS QUOT PRES FOLD PBLK FBLK
 

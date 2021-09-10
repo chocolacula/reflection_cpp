@@ -14,10 +14,15 @@
 #include "../../variable/box.h"
 #include "define_retry.h"
 #include "lexers/compiled/lexer_json.yy.h"
-#include "rr/expected.h"
-#include "rr/variant/variant.h"
+
+#undef REFLEX_OPTION_lexer
+#undef REFLEX_OPTION_outfile
+#undef REFLEX_OPTION_header_file
+#undef REFLEX_OPTION_namespace
 
 namespace rr {
+
+using namespace rf_json;
 
 class ParserJson : public LexerJson {
  public:
@@ -45,7 +50,7 @@ class ParserJson : public LexerJson {
         return info->get<Bool>().set(true);
       case 'f':
         return info->get<Bool>().set(false);
-      case '#':
+      case 'n':
         return info->match([this](Integer& i) -> Expected<None> { return i.set(parse_int(get_word())); },
                            [this](Floating& f) -> Expected<None> { return f.set(parse_double(get_word())); },
                            [this](auto&&) -> Expected<None> { return error_match(); });

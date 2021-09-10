@@ -6,12 +6,15 @@
 // * %o dotall mode: . matches \n
 // * %o unicode mode: . mathes any Unicode character
 // * \p{Non_ASCII_Unicode} matches any non-ASCII Unicode character
-// * JSON value types are indicated with tokens '0', 't', 'f', '#', '$'
+// * JSON value types are indicated with tokens '0', 't', 'f', 'n', '$'
 // * JSONParser is a recursive descent parser for JSON
 // * JSONParser recurses 100 levels deep max (MAXLEVEL)
 // * JSONParser accepts 1000 items per array/object max (MAXSIZE)
 
 %option lexer=LexerJson
+%option namespace=rf_json
+
+%o fast freespace dotall unicode noline
 
 %top{
   #include <cstdlib>  // strtoul(), strtod()
@@ -36,8 +39,6 @@
   std::string _word; // token value for token '$' (string)
 }
 
-%o fast freespace dotall unicode
-
 digit   [0-9]
 digit1  [1-9]
 digits  {digit}+
@@ -55,7 +56,7 @@ number  {int} {frac}? {exp}?
 null            { return '0'; }
 true            { return 't'; }
 false           { return 'f'; }
-{number}        { _word = text(); return '#'; }
+{number}        { _word = text(); return 'n'; }
 \"              { _word.clear(); start(STRING); }
 
 <STRING>{

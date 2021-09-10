@@ -1,5 +1,6 @@
 #pragma once
 
+//clang-format off
 #include "rr/reflection/the_great_table.h"
 #include "rr/types/common_actions.h"
 #include "rr/types/type_actions.h"
@@ -14,13 +15,11 @@ struct TypeActions<{{name}}> {
 
   static TypeInfo reflect(void* value, bool is_const) {
 
-    //clang-format off
     static constexpr ConstexprMap<{{name}}, {{length(__enums)}}> constants = {{{
-        {% for item in __fields -%}
+        {% for item in __enums -%}
         {{"{"}}{{name}}::{{item}}, "{{item}}"},
         {%- endfor -%}
     }}};
-    //clang-format on
 
     return Enum(static_cast<{{name}}*>(value), is_const, constants);
   }
@@ -28,14 +27,14 @@ struct TypeActions<{{name}}> {
 
 template <>
 TypeId TypeId::get({{name}}* /*unused*/) {
-  static TypeId id(TheGreatTable::record(Actions(&TypeActions<{{name}}>::reflect,          //
-                                                 &CommonActions<{{name}}>::type_name,      //
-                                                 &CommonActions<{{name}}>::type_size,      //
-                                                 &CommonActions<{{name}}>::alloc_default,  //
-                                                 &CommonActions<{{name}}>::call_delete,    //
-                                                 &CommonActions<{{name}}>::copy,           //
-                                                 &CommonActions<{{name}}>::copy_default)));
+  static TypeId id(TheGreatTable::record(Actions(&TypeActions<{{name}}>::reflect,        //
+                                                 &CommonActions<{{name}}>::type_name,    //
+                                                 &CommonActions<{{name}}>::type_size,    //
+                                                 &CommonActions<{{name}}>::call_new,     //
+                                                 &CommonActions<{{name}}>::call_delete,  //
+                                                 &CommonActions<{{name}}>::copy)));
   return id;
 }
 
 }  // namespace rr
+//clang-format on

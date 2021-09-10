@@ -10,3 +10,6 @@
 [submodule "generator/tclap"]
 	path = generator/tclap
 	url = https://github.com/mirror/tclap.git
+[submodule "generator/llvm-project"]
+	path = generator/llvm-project
+	url = https://github.com/llvm/llvm-project.git

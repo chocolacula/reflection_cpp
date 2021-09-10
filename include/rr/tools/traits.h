@@ -13,7 +13,18 @@
 #include <unordered_set>
 #include <vector>
 
+#include "../expected.h"
+
 namespace rr {
+
+template <typename T>
+struct is_expected : std::false_type {};
+
+template <typename T>
+inline constexpr bool is_expected_v = is_expected<T>::value;  // NOLINT std like name
+
+template <typename T, typename ErrorT>
+struct is_expected<Expected<T, ErrorT>> : std::true_type {};
 
 template <typename T>
 struct is_string : std::false_type {};

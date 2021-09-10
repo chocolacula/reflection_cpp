@@ -10,9 +10,15 @@
 #include "../../variable/box.h"
 #include "define_retry.h"
 #include "lexers/compiled/lexer_yaml.yy.h"
-#include "rr/variant/variant.h"
+
+#undef REFLEX_OPTION_lexer
+#undef REFLEX_OPTION_outfile
+#undef REFLEX_OPTION_header_file
+#undef REFLEX_OPTION_namespace
 
 namespace rr {
+
+using namespace rf_yaml;
 
 class ParserYaml : public LexerYaml {
  public:
@@ -88,11 +94,11 @@ class ParserYaml : public LexerYaml {
       case '{':
         ex =
             info->match([this](Object& o) -> Expected<None> { return parse_flow_map([&]() { return add_to_obj(o); }); },
-                        [this](Map& m) -> Expected<None> { return parse_flow_map([&]() { return add_to_map(m); }); },
+                        [this](Map& m) -> Expected<None> { return parse_flow_map(m); },
                         [this](auto&&) -> Expected<None> { return error_match(); });
         break;
       case '?':
-        ex = info->match([this](Map& m) -> Expected<None> { return parse_flow_map([&]() { return add_to_map(m); }); },
+        ex = info->match([this](Map& m) -> Expected<None> { return parse_map(m); },
                          [this](auto&&) -> Expected<None> {
                            return error("A complex key, marked '?' could be deserialized in a map key only");
                          });
@@ -267,7 +273,7 @@ class ParserYaml : public LexerYaml {
                           [this](Floating& f) -> Expected<None> { return f.set(parse_double(get_word())); },
                           [this](String& s) -> Expected<None> { return s.set(get_word()); },
                           [this](Enum& e) -> Expected<None> { return e.parse(get_word()); },
-                          [this](Map& m) -> Expected<None> { return parse_map([&]() { return add_to_map(m); }); },
+                          [this](Map& m) -> Expected<None> { return parse_map(m); },
                           [this](Object& o) -> Expected<None> { return parse_map([&]() { return add_to_obj(o); }); },
                           [this](auto&&) -> Expected<None> { return error_match(); });
     __retry(ex);
@@ -384,24 +390,38 @@ class ParserYaml : public LexerYaml {
     return None();
   }
 
-  inline Expected<None> add_to_map(Map& map) {
+  inline Expected<None> parse_map(Map& map) {
     Box key_box(map.key_type());
     Box val_box(map.val_type());
 
     auto info_k = Reflection::reflect(key_box.var());
     auto info_v = Reflection::reflect(val_box.var());
 
+    return parse_map([&]() { return add_to_map(map, &info_k, &info_v, key_box.var(), val_box.var()); });
+  }
+
+  inline Expected<None> parse_flow_map(Map& map) {
+    Box box_key(map.key_type());
+    Box box_val(map.val_type());
+
+    auto info_key = Reflection::reflect(box_key.var());
+    auto info_val = Reflection::reflect(box_val.var());
+
+    return parse_flow_map([&]() { return add_to_map(map, &info_key, &info_val, box_key.var(), box_val.var()); });
+  }
+
+  inline Expected<None> add_to_map(Map& map, TypeInfo* info_key, TypeInfo* info_value, Var var_key, Var var_value) {
     // get a key
-    __retry(parse(&info_k));
+    __retry(parse(info_key));
     next();
 
     // get a value
-    __retry(parse(&info_v));
+    __retry(parse(info_value));
     if (_token == '<') {
       next();
     }
 
-    map.insert(key_box.var(), val_box.var());
+    map.insert(var_key, var_value);
     return None();
   }
 

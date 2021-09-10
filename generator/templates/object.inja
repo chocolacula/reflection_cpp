@@ -1,5 +1,6 @@
 #pragma once
 
+//clang-format off
 #include "rr/reflection/the_great_table.h"
 #include "rr/types/common_actions.h"
 #include "rr/types/type_actions.h"
@@ -15,26 +16,24 @@ struct TypeActions<{{name}}> {
   static TypeInfo reflect(void* value, bool is_const) {
     auto p = static_cast<{{name}}*>(value);
 
-    //clang-format off
     return Object(Var(p, is_const), {
         {% for item in __fields -%}
         {"{{item}}", Var(&p->{{item}})},
         {%- endfor -%}
     });
-    //clang-format on
   }
 };
 
 template <>
 TypeId TypeId::get({{name}}* /*unused*/) {
-  static TypeId id(TheGreatTable::record(Actions(&TypeActions<{{name}}>::reflect,          //
-                                                 &CommonActions<{{name}}>::type_name,      //
-                                                 &CommonActions<{{name}}>::type_size,      //
-                                                 &CommonActions<{{name}}>::alloc_default,  //
-                                                 &CommonActions<{{name}}>::call_delete,    //
-                                                 &CommonActions<{{name}}>::copy,           //
-                                                 &CommonActions<{{name}}>::copy_default)));
+  static TypeId id(TheGreatTable::record(Actions(&TypeActions<{{name}}>::reflect,        //
+                                                 &CommonActions<{{name}}>::type_name,    //
+                                                 &CommonActions<{{name}}>::type_size,    //
+                                                 &CommonActions<{{name}}>::call_new,     //
+                                                 &CommonActions<{{name}}>::call_delete,  //
+                                                 &CommonActions<{{name}}>::copy)));
   return id;
 }
 
 }  // namespace rr
+//clang-format on

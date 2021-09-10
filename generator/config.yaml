@@ -1,12 +1,13 @@
-templates: #pathes to template files
-  {enum: templates/enum.inja, object: templates/object.inja}
-
+# current directory by default
 root_dir: !!str "../generator"
 
+compdb_dir: ../cmake-build
+
+templates: #pathes to template files
+  enum: templates/enum.inja
+  object: templates/object.inja
+
 input:
-  [&cf config.h, *cf, *cf, *cf]
-
-
-
+  - config.h
 
 output_dir: self_generated

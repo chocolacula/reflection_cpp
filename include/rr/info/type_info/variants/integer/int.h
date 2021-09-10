@@ -29,6 +29,7 @@ struct Int : IInteger {
     }
 
     *_value = value;
+    return None();
   }
 
   Var var() {

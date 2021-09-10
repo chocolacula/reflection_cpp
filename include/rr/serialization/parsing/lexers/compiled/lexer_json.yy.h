@@ -13,6 +13,8 @@
 #define REFLEX_OPTION_freespace           true
 #define REFLEX_OPTION_lex                 lex
 #define REFLEX_OPTION_lexer               LexerJson
+#define REFLEX_OPTION_namespace           rf_json
+#define REFLEX_OPTION_noline              true
 #define REFLEX_OPTION_outfile             "include/rr/serialization/parsing/lexers/compiled/lexer_json.yy.h"
 #define REFLEX_OPTION_unicode             true
 
@@ -22,7 +24,6 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#line 16 "include/rr/serialization/parsing/lexers/json.l"
 
   #include <cstdlib>  // strtoul(), strtod()
   #include <iostream> // std::cout etc.
@@ -53,8 +54,9 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+namespace rf_json {
+
 class LexerJson : public reflex::AbstractLexer<reflex::Matcher> {
-#line 24 "include/rr/serialization/parsing/lexers/json.l"
 
  public:
   rr::Position get_position() {
@@ -95,13 +97,14 @@ class LexerJson : public reflex::AbstractLexer<reflex::Matcher> {
   }
 };
 
+} // namespace rf_json
+
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 //  SECTION 1: %{ user code %}                                                //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#line 1 "include/rr/serialization/parsing/lexers/json.l"
 // A fast JSON parser and JSON writer
 // Written by Robert van Engelen
 // Edited by Maxim Voloshin
@@ -110,7 +113,7 @@ class LexerJson : public reflex::AbstractLexer<reflex::Matcher> {
 // * %o dotall mode: . matches \n
 // * %o unicode mode: . mathes any Unicode character
 // * \p{Non_ASCII_Unicode} matches any non-ASCII Unicode character
-// * JSON value types are indicated with tokens '0', 't', 'f', '#', '$'
+// * JSON value types are indicated with tokens '0', 't', 'f', 'n', '$'
 // * JSONParser is a recursive descent parser for JSON
 // * JSONParser recurses 100 levels deep max (MAXLEVEL)
 // * JSONParser accepts 1000 items per array/object max (MAXSIZE)
@@ -122,10 +125,14 @@ class LexerJson : public reflex::AbstractLexer<reflex::Matcher> {
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+namespace rf_json {
 extern void reflex_code_INITIAL(reflex::Matcher&);
+} // namespace rf_json
+namespace rf_json {
 extern void reflex_code_STRING(reflex::Matcher&);
+} // namespace rf_json
 
-int LexerJson::lex(void)
+int rf_json::LexerJson::lex(void)
 {
   static const reflex::Pattern PATTERN_INITIAL(reflex_code_INITIAL);
   static const reflex::Pattern PATTERN_STRING(reflex_code_STRING);
@@ -151,37 +158,29 @@ int LexerJson::lex(void)
               out().put(matcher().input());
             }
             break;
-          case 1: // rule include/rr/serialization/parsing/lexers/json.l:53: [ \t\n\r]+ :
-#line 53 "include/rr/serialization/parsing/lexers/json.l"
+          case 1: // rule include/rr/serialization/parsing/lexers/json.l:54: [ \t\n\r]+ :
 { /* ignore white space */ }
             break;
-          case 2: // rule include/rr/serialization/parsing/lexers/json.l:54: [\]\[}{,:] :
-#line 54 "include/rr/serialization/parsing/lexers/json.l"
+          case 2: // rule include/rr/serialization/parsing/lexers/json.l:55: [\]\[}{,:] :
 { return text()[0]; }
             break;
-          case 3: // rule include/rr/serialization/parsing/lexers/json.l:55: null :
-#line 55 "include/rr/serialization/parsing/lexers/json.l"
+          case 3: // rule include/rr/serialization/parsing/lexers/json.l:56: null :
 { return '0'; }
             break;
-          case 4: // rule include/rr/serialization/parsing/lexers/json.l:56: true :
-#line 56 "include/rr/serialization/parsing/lexers/json.l"
+          case 4: // rule include/rr/serialization/parsing/lexers/json.l:57: true :
 { return 't'; }
             break;
-          case 5: // rule include/rr/serialization/parsing/lexers/json.l:57: false :
-#line 57 "include/rr/serialization/parsing/lexers/json.l"
+          case 5: // rule include/rr/serialization/parsing/lexers/json.l:58: false :
 { return 'f'; }
             break;
-          case 6: // rule include/rr/serialization/parsing/lexers/json.l:58: {number} :
-#line 58 "include/rr/serialization/parsing/lexers/json.l"
-{ _word = text(); return '#'; }
+          case 6: // rule include/rr/serialization/parsing/lexers/json.l:59: {number} :
+{ _word = text(); return 'n'; }
             break;
-          case 7: // rule include/rr/serialization/parsing/lexers/json.l:59: \" :
-#line 59 "include/rr/serialization/parsing/lexers/json.l"
+          case 7: // rule include/rr/serialization/parsing/lexers/json.l:60: \" :
 { _word.clear(); start(STRING); }
 
             break;
-          case 8: // rule include/rr/serialization/parsing/lexers/json.l:74: . :
-#line 74 "include/rr/serialization/parsing/lexers/json.l"
+          case 8: // rule include/rr/serialization/parsing/lexers/json.l:75: . :
 { return '!'; /* error */ }
 
             break;
@@ -201,48 +200,37 @@ int LexerJson::lex(void)
               out().put(matcher().input());
             }
             break;
-          case 1: // rule include/rr/serialization/parsing/lexers/json.l:62: \" :
-#line 62 "include/rr/serialization/parsing/lexers/json.l"
+          case 1: // rule include/rr/serialization/parsing/lexers/json.l:63: \" :
 { start(INITIAL); return '$'; }
             break;
-          case 2: // rule include/rr/serialization/parsing/lexers/json.l:63: \\ ["\\/] :
-#line 63 "include/rr/serialization/parsing/lexers/json.l"
+          case 2: // rule include/rr/serialization/parsing/lexers/json.l:64: \\ ["\\/] :
 { _word.push_back(text()[1]); }
             break;
-          case 3: // rule include/rr/serialization/parsing/lexers/json.l:64: \\ b :
-#line 64 "include/rr/serialization/parsing/lexers/json.l"
+          case 3: // rule include/rr/serialization/parsing/lexers/json.l:65: \\ b :
 { _word.push_back('\b'); }
             break;
-          case 4: // rule include/rr/serialization/parsing/lexers/json.l:65: \\ t :
-#line 65 "include/rr/serialization/parsing/lexers/json.l"
+          case 4: // rule include/rr/serialization/parsing/lexers/json.l:66: \\ t :
 { _word.push_back('\t'); }
             break;
-          case 5: // rule include/rr/serialization/parsing/lexers/json.l:66: \\ n :
-#line 66 "include/rr/serialization/parsing/lexers/json.l"
+          case 5: // rule include/rr/serialization/parsing/lexers/json.l:67: \\ n :
 { _word.push_back('\n'); }
             break;
-          case 6: // rule include/rr/serialization/parsing/lexers/json.l:67: \\ f :
-#line 67 "include/rr/serialization/parsing/lexers/json.l"
+          case 6: // rule include/rr/serialization/parsing/lexers/json.l:68: \\ f :
 { _word.push_back('\f'); }
             break;
-          case 7: // rule include/rr/serialization/parsing/lexers/json.l:68: \\ r :
-#line 68 "include/rr/serialization/parsing/lexers/json.l"
+          case 7: // rule include/rr/serialization/parsing/lexers/json.l:69: \\ r :
 { _word.push_back('\r'); }
             break;
-          case 8: // rule include/rr/serialization/parsing/lexers/json.l:69: \\ u [[:xdigit:]]{4} :
-#line 69 "include/rr/serialization/parsing/lexers/json.l"
+          case 8: // rule include/rr/serialization/parsing/lexers/json.l:70: \\ u [[:xdigit:]]{4} :
 { _word.push_back(strtoul(text() + 2, NULL, 16)); }
             break;
-          case 9: // rule include/rr/serialization/parsing/lexers/json.l:70: [\]-\x7f\x20-\[] :
-#line 70 "include/rr/serialization/parsing/lexers/json.l"
+          case 9: // rule include/rr/serialization/parsing/lexers/json.l:71: [\]-\x7f\x20-\[] :
 { _word.push_back(text()[0]); }
             break;
-          case 10: // rule include/rr/serialization/parsing/lexers/json.l:71: \p{Non_ASCII_Unicode} :
-#line 71 "include/rr/serialization/parsing/lexers/json.l"
+          case 10: // rule include/rr/serialization/parsing/lexers/json.l:72: \p{Non_ASCII_Unicode} :
 { _word.append(str()); }
             break;
-          case 11: // rule include/rr/serialization/parsing/lexers/json.l:74: . :
-#line 74 "include/rr/serialization/parsing/lexers/json.l"
+          case 11: // rule include/rr/serialization/parsing/lexers/json.l:75: . :
 { return '!'; /* error */ }
 
             break;
@@ -271,6 +259,8 @@ int LexerJson::lex(void)
 #pragma clang diagnostic ignored "-Wunused-variable"
 #pragma clang diagnostic ignored "-Wunused-label"
 #endif
+
+namespace rf_json {
 
 void reflex_code_INITIAL(reflex::Matcher& m)
 {
@@ -478,6 +468,8 @@ S112:
   return m.FSM_HALT();
 }
 
+} // namespace rf_json
+
 #include <reflex/matcher.h>
 
 #if defined(OS_WIN)
@@ -489,6 +481,8 @@ S112:
 #pragma clang diagnostic ignored "-Wunused-variable"
 #pragma clang diagnostic ignored "-Wunused-label"
 #endif
+
+namespace rf_json {
 
 void reflex_code_STRING(reflex::Matcher& m)
 {
@@ -719,4 +713,6 @@ S122:
   m.FSM_TAKE(8);
   return m.FSM_HALT();
 }
+
+} // namespace rf_json
 

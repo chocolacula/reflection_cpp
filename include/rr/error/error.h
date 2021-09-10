@@ -51,15 +51,13 @@ struct Error {
     return _data.shared;
   }
 
-  friend std::ostream& operator<<(std::ostream& os, const Error& err);
+  friend std::ostream& operator<<(std::ostream& os, const Error& err) {
+    os << err.what();
+    return os;
+  }
 
  protected:
   TightString _data;
 };
-
-std::ostream& operator<<(std::ostream& os, const Error& err) {
-  os << err.what();
-  return os;
-}
 
 }  // namespace rr

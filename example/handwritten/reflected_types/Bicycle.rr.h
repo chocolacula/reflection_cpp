@@ -4,8 +4,8 @@
 #include "rr/types/common_actions.h"
 #include "rr/types/type_actions.h"
 
-// from input parameter
-#include "../../object.h"
+// injected
+#include "../../data/bicycle.h"
 
 namespace rr {
 

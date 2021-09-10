@@ -34,9 +34,9 @@ append(std::string* str, T&& arg) {
 }
 
 template <typename T>
-static typename std::enable_if_t<std::is_integral_v<std::remove_reference_t<T>> &&  //
-                                     !std::is_same_v<T, bool> &&                    //
-                                     !std::is_same_v<T, char>,
+static typename std::enable_if_t<std::is_integral_v<std::remove_reference_t<T>> &&         //
+                                     !std::is_same_v<std::remove_reference_t<T>, bool> &&  //
+                                     !std::is_same_v<std::remove_reference_t<T>, char>,
                                  void>
 append(std::string* str, T&& arg) {
   *str += std::to_string(arg);
@@ -51,11 +51,15 @@ append(std::string* str, T&& arg) {
   stream << arg;
 }
 
-void append(std::string* str, bool arg) {
+template <typename T>
+static typename std::enable_if_t<std::is_same_v<std::remove_reference_t<T>, bool>, void>  //
+append(std::string* str, T&& arg) {
   *str += arg ? "true" : "false";
 }
 
-void append(std::string* str, char arg) {
+template <typename T>
+static typename std::enable_if_t<std::is_same_v<std::remove_reference_t<T>, char>, void>  //
+append(std::string* str, T&& arg) {
   *str += arg;
 }
 
