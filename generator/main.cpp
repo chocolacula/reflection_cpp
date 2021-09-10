@@ -21,10 +21,12 @@
 #include "tclap/CmdLine.h"
 
 // clang
+#include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
+#include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendActions.h"
-#include "clang/Lex/Lexer.h"
+#include "clang/Lex/PPCallbacks.h"
 #include "clang/Tooling/CompilationDatabase.h"
 #include "clang/Tooling/Tooling.h"
 
@@ -51,56 +53,90 @@ class Printer : public clang::ast_matchers::MatchFinder::MatchCallback {
 
       for (auto&& d : c->getPrimaryContext()->decls()) {
         if (auto* f = dyn_cast<FieldDecl>(d)) {
-          if (f->hasAttrs()) {
-            llvm::outs() << "has attrs: ";
-
-            for (auto&& a : f->getAttrs()) {
-              llvm::outs() << a->getSpelling() << " ";
-            }
-          }
-
           llvm::outs() << f->getNameAsString() << "\n";
         }
 
         if (auto* v = dyn_cast<VarDecl>(d)) {
           llvm::outs() << v->getNameAsString() << "\n";
-
-          if (v->hasAttrs()) {
-            llvm::outs() << "has attrs: ";
-
-            for (auto&& a : v->getAttrs()) {
-              llvm::outs() << a->getSpelling() << " ";
-            }
-          }
         }
       }
     }
     if (const auto* e = result.Nodes.getNodeAs<EnumDecl>("enum")) {
-      if (e->hasAttrs()) {
-        llvm::outs() << "has attrs: ";
-
-        for (auto&& a : e->getAttrs()) {
-          llvm::outs() << a->getSpelling() << " ";
-        }
-      }
-
       llvm::outs() << e->getQualifiedNameAsString() << "\n";
 
       for (auto&& constants : e->enumerators()) {
-        if (constants->hasAttrs()) {
-          llvm::outs() << "has attrs: ";
-
-          for (auto&& a : constants->getAttrs()) {
-            llvm::outs() << Lexer::getSourceText(CharSourceRange::getTokenRange(a->getRange()),
-                                                 *result.SourceManager,  //
-                                                 result.Context->getLangOpts())
-                                .str();
-          }
-        }
-
         llvm::outs() << constants->getNameAsString() << "\n";
       }
     }
+  }
+};
+
+class FindMacro : public PPCallbacks {
+ public:
+  void MacroExpands(const Token& token,                 //
+                    const MacroDefinition& definition,  //
+                    SourceRange range,                  //
+                    const MacroArgs* args) override {
+
+    llvm::outs() << token.getName() << "\n";
+  }
+};
+
+class FindNamedClassVisitor : public RecursiveASTVisitor<FindNamedClassVisitor> {
+ public:
+  explicit FindNamedClassVisitor(ASTContext* Context) : Context(Context) {
+  }
+
+  bool VisitCXXRecordDecl(CXXRecordDecl* Declaration) {
+    if (Declaration->getQualifiedNameAsString() == "n::m::C") {
+      FullSourceLoc FullLocation = Context->getFullLoc(Declaration->getBeginLoc());
+      if (FullLocation.isValid())
+        llvm::outs() << "Found declaration at " << FullLocation.getSpellingLineNumber() << ":"
+                     << FullLocation.getSpellingColumnNumber() << "\n";
+    }
+    return true;
+  }
+
+ private:
+  ASTContext* Context;
+};
+
+class MacroConsumer : public clang::ASTConsumer {
+ public:
+  explicit MacroConsumer(ASTContext* Context) : Visitor(Context) {
+  }
+
+  void HandleTranslationUnit(clang::ASTContext& Context) override {
+    Visitor.TraverseDecl(Context.getTranslationUnitDecl());
+  }
+
+ private:
+  FindNamedClassVisitor Visitor;
+};
+
+class MacroMatching : public ASTFrontendAction {
+  bool BeginSourceFileAction(CompilerInstance& ci) override {
+    std::unique_ptr<FindMacro> callback(new FindMacro());
+
+    Preprocessor& pp = ci.getPreprocessor();
+    pp.addPPCallbacks(std::move(callback));
+
+    return true;
+  }
+
+  void EndSourceFileAction() override {
+    CompilerInstance& ci = getCompilerInstance();
+    Preprocessor& pp = ci.getPreprocessor();
+    auto* callback = static_cast<FindMacro*>(pp.getPPCallbacks());
+
+    // do whatever you want with the callback now
+    // if (callback->has_include)
+    // std::cout << "Found at least one include" << std::endl;
+  }
+
+  virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance& Compiler,
+                                                                llvm::StringRef InFile) override {
+    return std::make_unique<MacroConsumer>(&Compiler.getASTContext());
   }
 };
 
@@ -171,6 +207,9 @@ int main(int argc, const char** argv) {
     MatchFinder finder;
     finder.addMatcher(class_matcher, &printer);
     finder.addMatcher(enum_matcher, &printer);
+
+    MacroMatching macro;
+    tool.run(newFrontendActionFactory(&macro).get());
 
     tool.run(newFrontendActionFactory(&finder).get());
   }
