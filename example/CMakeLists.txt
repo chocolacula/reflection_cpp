@@ -10,8 +10,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/output)
 
 include_directories(../include)
 
-include_directories(../generator/RE-flex/include)
-link_directories(../generator/RE-flex/lib)
+include_directories(../RE-flex/include)
+link_directories(../RE-flex/lib)
 
 set(SOURCES
     main.cpp)

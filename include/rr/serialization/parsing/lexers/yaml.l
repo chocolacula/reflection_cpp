@@ -105,18 +105,21 @@
   }
 
   // add one or n chars c to the string
-  void add(char c, size_t n = 1) {
-    while (n-- > 0)
+  void add(wchar_t c, size_t n = 1) {
+    while (n-- > 0) {
       _word.push_back(c);
+    }
   }
 
   // add indent to the string, prefixed with a \n if nl is true
   void add_indent() {
-    if (nl)
+    if (nl) {
       _word.push_back('\n');
+    }
     size_t stop = matcher().last_stop();
-    if (size() > stop)
+    if (size() > stop) {
       _word.append(size() - stop, ' ');
+    }
   }
 
   // if nl is true, add a \n to the string then reset nl
@@ -139,13 +142,15 @@
     switch (mode)
     {
       case CLIP:
-        while (!_word.empty() && _word.back() == '\n')
+        while (!_word.empty() && _word.back() == '\n') {
           _word.pop_back();
+        }
         _word.push_back('\n');
         break;
       case STRIP:
-        while (!_word.empty() && _word.back() == '\n')
+        while (!_word.empty() && _word.back() == '\n') {
           _word.pop_back();
+        }
         break;
       case KEEP:
         break;

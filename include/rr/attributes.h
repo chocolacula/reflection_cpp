@@ -1,10 +1,10 @@
 #pragma once
 
-#define CONCAT(x, y) x y
+/// options could be:
+/// WithBase - to reflect base class accessible fields too
+/// WithNonPublic - to add private and protected fields to the reflected fields
+#define ER_REFLECT(...)
 
-// options are: WithBase, WithPrivate
-#define RR_REFLECT(options) [[clang::annotate(CONCAT("re:reflect:", options))]]
+#define ER_ALIAS(name)
 
-#define RR_ALIAS(name) [[clang::annotate(CONCAT("re:alias:", name))]]
-
-#define RR_EXCLUDE
+#define ER_EXCLUDE

@@ -7,7 +7,7 @@
 #include "color.h"
 #include "rr/attributes.h"
 
-RR_OBJECT()
+ER_REFLECT()
 struct Bicycle {
   Bicycle() = default;
 
@@ -16,10 +16,10 @@ struct Bicycle {
   std::string manufacturer;
   std::string model;
 
-  RR_ALIAS(weight)
+  ER_ALIAS(weight)
   float frame_weight;
 
-  RR_ALIAS(wheel_size)
+  ER_ALIAS(wheel_size)
   float wheel_size_inch;
 
   std::vector<Colors> colors;

@@ -23,11 +23,11 @@ using namespace rf_yaml;
 class ParserYaml : public LexerYaml {
  public:
   ParserYaml(const char* input, size_t input_size)  //
-      : LexerYaml(reflex::Input(input, input_size)), _token(static_cast<char>(lex())) {
+      : LexerYaml(reflex::Input(input, input_size)), _token(static_cast<wchar_t>(lex())) {
   }
 
   explicit ParserYaml(std::istream& stream)  //
-      : LexerYaml(stream), _token(static_cast<char>(lex())) {
+      : LexerYaml(stream), _token(static_cast<wchar_t>(lex())) {
   }
 
   Expected<None> deserialize(TypeInfo* info) {
@@ -386,6 +386,9 @@ class ParserYaml : public LexerYaml {
     auto info = Reflection::reflect(ex.unwrap());
 
     next();
+    if (is_new_line(_token)) {
+      next();
+    }
     __retry(parse(&info));
     return None();
   }
@@ -425,9 +428,9 @@ class ParserYaml : public LexerYaml {
     return None();
   }
 
-  char next() {
+  wchar_t next() {
     if (_token != 0) {
-      _token = static_cast<char>(lex());
+      _token = static_cast<wchar_t>(lex());
     }
     return _token;
   }
@@ -444,7 +447,7 @@ class ParserYaml : public LexerYaml {
     return Error(format("{}; {}", str, get_position().to_string()));
   }
 
-  inline Error error_token(char token) {
+  inline Error error_token(wchar_t token) {
     return Error(format("Unexpected token '{}'; {}", token, get_position().to_string()));
   }
 
@@ -471,7 +474,7 @@ class ParserYaml : public LexerYaml {
     return std::strtod(&str[0], nullptr);
   }
 
-  char _token;
+  wchar_t _token;
   std::unordered_map<std::string, Var> _anchors;
 };
 

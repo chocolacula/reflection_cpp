@@ -41,7 +41,7 @@ class ParserJson : public LexerJson {
     return parse(info, next());
   }
 
-  Expected<None> parse(TypeInfo* info, char token) {
+  Expected<None> parse(TypeInfo* info, wchar_t token) {
     switch (token) {
       case '0':
         // do nothing
@@ -86,7 +86,7 @@ class ParserJson : public LexerJson {
       return error("Max depth level exceeded");
     }
 
-    char token = next();
+    auto token = next();
     if (token == ']') {
       // an empty array
       _level -= 1;
@@ -103,7 +103,7 @@ class ParserJson : public LexerJson {
                                 [](Error&& err) -> Expected<None> { return err; });
       __retry(ex);
 
-      char token = next();
+      auto token = next();
       if (token == ']') {
         --_level;
         return None();
@@ -133,7 +133,7 @@ class ParserJson : public LexerJson {
     }
 
     for (size_t len = 0; len < kMaxArr; ++len) {
-      char token = next();
+      auto token = next();
 
       if (len == 0 && token == '}') {
         --_level;
@@ -167,7 +167,7 @@ class ParserJson : public LexerJson {
       return error("Max depth level exceeded");
     }
 
-    char token = next();
+    auto token = next();
 
     std::string key = "key";
     std::string val = "val";
@@ -272,15 +272,15 @@ class ParserJson : public LexerJson {
     return error("Max depth level exceeded");
   }
 
-  inline char next() {
-    return static_cast<char>(lex());
+  inline wchar_t next() {
+    return static_cast<wchar_t>(lex());
   }
 
   inline Error error(const char* str) {
     return Error(format("{}; {}", str, get_position().to_string()));
   }
 
-  inline Error error_token(char token) {
+  inline Error error_token(wchar_t token) {
     return Error(format("Unexpected token '{}'; {}", token, get_position().to_string()));
   }
 

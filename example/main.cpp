@@ -84,7 +84,7 @@ int main() {
   println("\n{}", Reflection::sprint(bicycle_info));
 
   // and for a sweet one you can serialize to struct and vice vera
-  auto str =
+  const auto str =
       "{\"weight\":16.400000,"
       "\"model\":\"Aurum\","
       "\"colors\":[\"kGray\",\"kGreen\"],"
@@ -101,13 +101,13 @@ int main() {
   // 'val' for a value
   // only two fields allowed, the order doesn't metter
   // with special tag '!!map|key:val' in the start of a JSON array fields names could be implicitly specified
-  auto m_str =
+  const auto m_str =
       "[\"!!map|game:price_usd\","
       "{\"game\":\"Blasphemous\",\"price_usd\":34},"
       "{\"price_usd\":60,\"game\":\"Call Of Duty\"}]";
   auto m = serialization::json::from_string<std::map<std::string, int>>(m_str).unwrap();
 
-  println(serialization::json::to_string(&m).unwrap());
+  println("\n{}", serialization::json::to_string(&m).unwrap());
 
   return 0;
 }
