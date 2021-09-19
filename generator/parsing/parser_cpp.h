@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "nlohmann/json.hpp"
+
 // clang
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
@@ -23,9 +25,9 @@ using namespace clang::ast_matchers;
 class ParserCpp {
  public:
   ParserCpp(const CompilationDatabase* compdb, std::string&& file_path)
-      : _tool(*compdb, {std::move(file_path)}),                       //
-        _macro_factory(std::make_unique<MacroFactory>(_attributes)),  //
-        _matcher(std::make_unique<Matcher>(_attributes)) {
+      : _tool(*compdb, {std::move(file_path)}),                 //
+        _macro_factory(std::make_unique<MacroFactory>(&_ctx)),  //
+        _matcher(std::make_unique<Matcher>(&_ctx)) {
 
     static const auto class_matcher = cxxRecordDecl(isDefinition(), unless(isExpansionInSystemHeader())).bind("c");
     _finder.addMatcher(class_matcher, _matcher.get());
@@ -34,11 +36,17 @@ class ParserCpp {
     _finder.addMatcher(enum_matcher, _matcher.get());
   }
 
-  void get_one() {
+  std::vector<nlohmann::json> parse() {
     // handle macro attributes at first
     _tool.run(_macro_factory.get());
-    // traverse AST, check attributes and build json objects
+
+    if (_ctx.reflect_map.empty()) {
+      return {};
+    }
+
+    // traverse AST, check attributes, build json objects and fill result field in context
     _tool.run(newFrontendActionFactory(&_finder).get());
+    return _ctx.result;
   }
 
  private:
@@ -55,16 +63,17 @@ class ParserCpp {
     bool withBase = false;
   };
 
-  struct Attributes {
+  struct Context {
     std::unordered_map<unsigned, AttrReflect> reflect_map;
     std::unordered_map<unsigned, std::string> alias_map;
     std::unordered_set<unsigned> excludes;
-  } _attributes;
+
+    std::vector<nlohmann::json> result;
+  } _ctx;
 
   class MacroCallback : public PPCallbacks {
    public:
-    explicit MacroCallback(SourceManager& sm, LangOptions& opts, Attributes& attributes)
-        : _sm(sm), _opts(opts), _attributes(attributes) {
+    explicit MacroCallback(SourceManager& sm, LangOptions& opts, Context* ctx) : _sm(sm), _opts(opts), _ctx(ctx) {
     }
 
     void MacroExpands(const Token& token, const MacroDefinition& /*def*/, SourceRange /*range*/,
@@ -108,7 +117,7 @@ class ParserCpp {
           spelling = spell(&t, _sm);
         } while (spelling == "struct" || spelling == "class" || spelling == "enum" || spelling == "const");
 
-        _attributes.reflect_map[_sm.getFileOffset(t.getLocation())] = attr;
+        _ctx->reflect_map[_sm.getFileOffset(t.getLocation())] = attr;
 
       } else if (text == "ER_ALIAS") {
         std::string alias;
@@ -141,7 +150,7 @@ class ParserCpp {
           }
         }
 
-        _attributes.alias_map[_sm.getFileOffset(t_origin.getLocation())] = alias;
+        _ctx->alias_map[_sm.getFileOffset(t_origin.getLocation())] = alias;
 
       } else if (text == "ER_EXCLUDE") {
 
@@ -163,48 +172,48 @@ class ParserCpp {
           }
         }
 
-        _attributes.excludes.insert(_sm.getFileOffset(t_origin.getLocation()));
+        _ctx->excludes.insert(_sm.getFileOffset(t_origin.getLocation()));
       }
     }
 
    private:
     SourceManager& _sm;
     LangOptions& _opts;
-    Attributes& _attributes;
+    Context* _ctx;
   };
 
   class MacroAction : public ASTFrontendAction {
    public:
-    explicit MacroAction(Attributes& attributes) : _attributes(attributes) {
+    explicit MacroAction(Context* ctx) : _ctx(ctx) {
     }
 
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance& compiler, StringRef /*in_file*/) override {
       compiler.getPreprocessor().addPPCallbacks(std::make_unique<MacroCallback>(compiler.getSourceManager(),  //
                                                                                 compiler.getLangOpts(),       //
-                                                                                _attributes));
+                                                                                _ctx));
       return std::make_unique<ASTConsumer>();
     }
 
    private:
-    Attributes& _attributes;
+    Context* _ctx;
   };
 
   class MacroFactory : public FrontendActionFactory {
    public:
-    explicit MacroFactory(Attributes& attributes) : _attributes(attributes) {
+    explicit MacroFactory(Context* ctx) : _ctx(ctx) {
     }
 
     std::unique_ptr<FrontendAction> create() override {
-      return std::make_unique<MacroAction>(_attributes);
+      return std::make_unique<MacroAction>(_ctx);
     }
 
    private:
-    Attributes& _attributes;
+    Context* _ctx;
   };
 
   class Matcher : public MatchFinder::MatchCallback {
    public:
-    explicit Matcher(Attributes& attributes) : _attributes(attributes) {
+    explicit Matcher(Context* ctx) : _ctx(ctx) {
     }
 
     void run(const MatchFinder::MatchResult& result) final {
@@ -218,12 +227,12 @@ class ParserCpp {
     }
 
    private:
-    Attributes& _attributes;
+    Context* _ctx;
 
     void handle_class(const CXXRecordDecl* c, bool is_force, const SourceManager& sm, const LangOptions& opts) {
 
-      auto it = _attributes.reflect_map.find(get_offset(c, sm, opts));
-      if (it != _attributes.reflect_map.end() || is_force) {
+      auto it = _ctx->reflect_map.find(get_offset(c, sm, opts));
+      if (it != _ctx->reflect_map.end() || is_force) {
         llvm::outs() << "reflected ";
       } else {
         return;
@@ -239,55 +248,57 @@ class ParserCpp {
       llvm::outs() << "\n";
 
       for (auto&& d : c->getPrimaryContext()->decls()) {
-        if (const auto* nc = dyn_cast<CXXRecordDecl>(d)) {
-          if (nc->isThisDeclarationADefinition()) {
-            llvm::outs() << nc->getNameAsString() << " nested class\n";
-            handle_class(nc, true, sm, opts);
-          }
-        }
-
         if (const auto* f = dyn_cast<FieldDecl>(d)) {
           auto offset = get_offset(f, sm, opts);
 
-          if (_attributes.excludes.find(offset) != _attributes.excludes.end()) {
+          if (_ctx->excludes.find(offset) != _ctx->excludes.end()) {
             continue;
           }
 
           llvm::outs() << to_string(f->getAccess()) << " ";
           llvm::outs() << f->getNameAsString();
 
-          auto it = _attributes.alias_map.find(offset);
-          if (it != _attributes.alias_map.end()) {
+          auto it = _ctx->alias_map.find(offset);
+          if (it != _ctx->alias_map.end()) {
             llvm::outs() << " as " << it->second << "\n";
           } else {
             llvm::outs() << "\n";
           }
+          continue;
         }
 
         if (const auto* v = dyn_cast<VarDecl>(d)) {
           auto offset = get_offset(v, sm, opts);
 
-          if (_attributes.excludes.find(offset) != _attributes.excludes.end()) {
+          if (_ctx->excludes.find(offset) != _ctx->excludes.end()) {
             continue;
           }
 
           llvm::outs() << to_string(v->getAccess()) << " static ";
           llvm::outs() << v->getNameAsString();
 
-          auto it = _attributes.alias_map.find(offset);
-          if (it != _attributes.alias_map.end()) {
+          auto it = _ctx->alias_map.find(offset);
+          if (it != _ctx->alias_map.end()) {
             llvm::outs() << " as " << it->second << "\n";
           } else {
             llvm::outs() << "\n";
+          }
+          continue;
+        }
+
+        if (const auto* nc = dyn_cast<CXXRecordDecl>(d)) {
+          if (nc->isThisDeclarationADefinition()) {
+            llvm::outs() << nc->getNameAsString() << " nested class\n";
+            handle_class(nc, true, sm, opts);
           }
         }
       }
     }
 
     inline void handle_enum(const EnumDecl* e, const SourceManager& sm, const LangOptions& opts) {
-      auto it = _attributes.reflect_map.find(get_offset(e, sm, opts));
+      auto it = _ctx->reflect_map.find(get_offset(e, sm, opts));
 
-      if (it != _attributes.reflect_map.end()) {
+      if (it != _ctx->reflect_map.end()) {
         llvm::outs() << "reflected ";
       } else {
         return;
@@ -298,14 +309,14 @@ class ParserCpp {
       for (auto&& constant : e->enumerators()) {
         auto offset = get_offset(constant, sm, opts);
 
-        if (_attributes.excludes.find(offset) != _attributes.excludes.end()) {
+        if (_ctx->excludes.find(offset) != _ctx->excludes.end()) {
           continue;
         }
 
         llvm::outs() << constant->getNameAsString();
 
-        auto it = _attributes.alias_map.find(offset);
-        if (it != _attributes.alias_map.end()) {
+        auto it = _ctx->alias_map.find(offset);
+        if (it != _ctx->alias_map.end()) {
           llvm::outs() << " as " << it->second << "\n";
         } else {
           llvm::outs() << "\n";

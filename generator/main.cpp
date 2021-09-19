@@ -74,7 +74,7 @@ int main(int argc, const char** argv) {
     file_path.append(file_name);
 
     ParserCpp parser(compdb.get(), std::move(file_path.string()));
-    parser.get_one();
+    auto json_vec = parser.parse();
   }
 
   // std::unordered_map<std::string, Node> registry;

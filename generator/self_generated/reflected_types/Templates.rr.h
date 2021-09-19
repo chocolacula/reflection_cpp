@@ -17,8 +17,8 @@ struct TypeActions<Config::Templates> {
 
     // clang-format off
     return Object(Var(p, is_const), {
-      {"enum", Var(&p->for_enum)},
-      {"object", Var(&p->object)},
+      {"enum", FieldInfo(&p->for_enum, Access::kPublic)},
+      {"object", FieldInfo(&p->object, Access::kPublic)},
     });
     // clang-format on
   }

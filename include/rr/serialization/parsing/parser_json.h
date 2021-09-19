@@ -61,10 +61,10 @@ class ParserJson : public LexerJson {
       case '[':
         // clang-format off
         return info->match(
-            [this, info](Array& a) -> Expected<None> {
+            [this](Array& a) -> Expected<None> {
               return parse_array(a.nested_type(), [&](size_t i, Var var) { return add_to_array(a, i, var); });
             },
-            [this, info](Sequence& s) -> Expected<None> {
+            [this](Sequence& s) -> Expected<None> {
               return parse_array(s.nested_type(), [&](size_t, Var var) { return s.push(var); });
             },
             [this](Map& m) -> Expected<None> {

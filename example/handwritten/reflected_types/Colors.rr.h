@@ -1,5 +1,6 @@
 #pragma once
 
+// clang-format off
 #include "rr/constexpr_map.h"
 #include "rr/expected.h"
 #include "rr/reflection/the_great_table.h"
@@ -15,13 +16,12 @@ template <>
 struct TypeActions<Colors> {
 
   static TypeInfo reflect(void* value, bool is_const) {
-
     static constexpr ConstexprMap<Colors, 6> constants = {{{
-        {Colors::kWhite, "kWhite"},  //
-        {Colors::kRed, "kRed"},      //
-        {Colors::kGreen, "kGreen"},  //
-        {Colors::kBlue, "kBlue"},    //
-        {Colors::kBlack, "kBlack"},  //
+        {Colors::kWhite, "kWhite"},
+        {Colors::kRed, "kRed"},
+        {Colors::kGreen, "kGreen"},
+        {Colors::kBlue, "kBlue"},
+        {Colors::kBlack, "kBlack"},
         {Colors::kGray, "kGray"},
     }}};
 
@@ -41,3 +41,4 @@ TypeId TypeId::get(Colors* /*unused*/) {
 }
 
 }  // namespace rr
+// clang-format on

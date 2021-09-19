@@ -1,5 +1,6 @@
 #pragma once
 
+#include "rr/info/access.h"
 #include "rr/reflection/the_great_table.h"
 #include "rr/types/common_actions.h"
 #include "rr/types/type_actions.h"
@@ -17,11 +18,11 @@ struct TypeActions<Config> {
 
     // clang-format off
     return Object(Var(p, is_const), {
-      {"root_dir", Var(&p->root_dir)},
-      {"compdb_dir", Var(&p->compdb_dir)},
-      {"templates", Var(&p->templates)},
-      {"input", Var(&p->input)},
-      {"output_dir", Var(&p->output_dir)},
+      {"root_dir", FieldInfo(&p->root_dir, Access::kPublic)},
+      {"compdb_dir", FieldInfo(&p->compdb_dir, Access::kPublic)},
+      {"templates", FieldInfo(&p->templates, Access::kPublic)},
+      {"input", FieldInfo(&p->input, Access::kPublic)},
+      {"output_dir", FieldInfo(&p->output_dir, Access::kPublic)},
     });
     // clang-format on
   }

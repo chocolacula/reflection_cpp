@@ -1,6 +1,7 @@
 #pragma once
 
 #include <istream>
+#include <string>
 
 #include "../expected.h"
 #include "../reflection/printer.h"
@@ -35,87 +36,72 @@ static Expected<T> from_stream(std::istream& stream) {
   return obj;
 }
 
-static void serialize(const TypeInfo& info, std::string* result);
+static void serialize(const TypeInfo& info, std::string* result, int indent);
 
 template <typename T>
 static Expected<std::string> to_string(const T& obj) {
   auto info = Reflection::reflect(obj);
 
   std::string result;
-  serialize(info, &result);
+  serialize(info, &result, 0);
   return result;
 }
 
-static void serialize(const TypeInfo& info, std::string* result) {
+static void serialize(const TypeInfo& info, std::string* result, int indent) {
   info.match(
-      [result](const Object& o) {
-        *result += '{';
+      [result, indent](const Object& o) {
         for (auto&& record : o.get_all_fields()) {
-          *result += '"';
+          if (record.second.access() != Access::kPublic) {
+            continue;
+          }
+
+          *result += std::string(indent, ' ');
           *result += record.first;
-          *result += "\":";
+          *result += ": ";
 
-          auto field_info = Reflection::reflect(record.second);
-          serialize(field_info, result);
-          *result += ',';
-        }
-
-        if ((*result)[result->size() - 1] == ',') {
-          (*result)[result->size() - 1] = '}';
-        } else {
-          *result += '}';
+          auto field_info = Reflection::reflect(record.second.var());
+          serialize(field_info, result, indent + 2);
+          *result += '\n';
         }
       },
-      [result](const Bool& b) { *result += b.to_string(); },     //
-      [result](const Integer& i) { *result += i.to_string(); },  //
-      [result](const Floating& f) { *result += f.to_string(6); },
-      [result](const String& s) {
-        *result += '"';
-        *result += s.get();
-        *result += '"';
-      },
-      [result](const Enum& e) {
-        *result += '"';
-        *result += e.to_string();
-        *result += '"';
-      },
-      [result](const Map& m) {
-        *result += '{';
-
-        m.for_each([result](Var key, Var value) {
+      [result](const Bool& b) { *result += b.to_string(); },       //
+      [result](const Integer& i) { *result += i.to_string(); },    //
+      [result](const Floating& f) { *result += f.to_string(6); },  //
+      [result](const String& s) { *result += s.get(); },           //
+      [result](const Enum& e) { *result += e.to_string(); },       //
+      [result, indent](const Map& m) {
+        if (m.size() == 0) {
+          *result += "{}\n";
+          return;
+        }
+        m.for_each([result, indent](Var key, Var value) {
           auto key_info = Reflection::reflect(key);
-          *result += "\"key\":";
-          serialize(key_info, result);
+          serialize(key_info, result, indent + 2);
 
-          *result += ',';
+          *result += ": ";
 
           auto value_info = Reflection::reflect(value);
-          *result += "\"val\":";
-          serialize(value_info, result);
+          serialize(value_info, result, indent + 2);
 
-          *result += ',';
+          *result += '\n';
         });
-
-        if ((*result)[result->size() - 1] == ',') {
-          (*result)[result->size() - 1] = '}';
-        } else {
-          *result += '}';
-        }
       },
-      [result](const auto& as) {  // Array or Sequence
-        *result += "[";
-
-        as.for_each([result](Var entry) {
+      [result, indent](const auto& as) {  // Array or Sequence
+        if (as.size() == 0) {
+          *result += "[]\n";
+          return;
+        }
+        *result += '\n';
+        as.for_each([result, indent](Var entry) {
+          *result += "  - ";
           auto entry_info = Reflection::reflect(entry);
+          serialize(entry_info, result, indent + 4);
 
-          serialize(entry_info, result);
-          *result += ",";
+          *result += '\n';
         });
 
-        if ((*result)[result->size() - 1] == ',') {
-          (*result)[result->size() - 1] = ']';
-        } else {
-          *result += ']';
+        if ((*result)[result->size() - 1] == '\n') {
+          result->pop_back();
         }
       });
 }

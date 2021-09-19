@@ -64,7 +64,7 @@ struct Sequence : public BASE, public ISequence {
     match([](auto&& s) { s.clear(); });
   }
 
-  size_t size() override {
+  size_t size() const override {
     return match([](auto&& s) -> size_t { return s.size(); });
   }
 

@@ -43,7 +43,7 @@ struct StdList : public IList {
     _list->clear();
   }
 
-  size_t size() override {
+  size_t size() const override {
     return _list->size();
   }
 

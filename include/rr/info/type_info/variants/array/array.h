@@ -54,7 +54,7 @@ struct Array final : public IArray {
     _array->for_each(callback);
   }
 
-  size_t size() override {
+  size_t size() const override {
     return _array->size();
   }
 

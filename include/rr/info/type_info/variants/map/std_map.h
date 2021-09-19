@@ -45,7 +45,7 @@ struct StdMap final : public IMap {
     _map->clear();
   }
 
-  size_t size() override {
+  size_t size() const override {
     return _map->size();
   }
 

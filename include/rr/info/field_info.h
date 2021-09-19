@@ -1,5 +1,9 @@
 #pragma once
 
+#include <cstdint>
+#include <type_traits>
+
+#include "../variable/var.h"
 #include "access.h"
 
 namespace rr {
@@ -7,14 +11,39 @@ namespace rr {
 class FieldInfo {
  public:
   template <typename T>
-  constexpr FieldInfo() {
+  constexpr FieldInfo(const T* ptr, Access acc) : _var(ptr), _access(acc) {
   }
 
-  // int id() const {
-  //   return _type_id;
-  // }
+  template <typename T>
+  constexpr FieldInfo(T* ptr, Access acc) : _var(ptr), _access(acc) {
+  }
+
+  Var var() const {
+    return _var;
+  }
+
+  Access access() const {
+    return _access;
+  }
+
+  bool is_public() const {
+    return (_access & Access::kPublic) != Access::kNone;
+  }
+
+  bool is_protected() const {
+    return (_access & Access::kProtected) != Access::kNone;
+  }
+
+  bool is_private() const {
+    return (_access & Access::kPrivate) != Access::kNone;
+  }
+
+  bool is_static() const {
+    return (_access & Access::kStatic) != Access::kNone;
+  }
 
  private:
+  Var _var;
   Access _access;
 };
 

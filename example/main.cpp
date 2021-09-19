@@ -6,6 +6,7 @@
 #include "print.h"
 #include "rr/reflection/printer.h"
 #include "rr/serialization/json.h"
+#include "rr/serialization/yaml.h"
 
 using namespace rr;
 
@@ -108,6 +109,7 @@ int main() {
   auto m = serialization::json::from_string<std::map<std::string, int>>(m_str).unwrap();
 
   println("\n{}", serialization::json::to_string(&m).unwrap());
+  println("\n{}", serialization::yaml::to_string(&norco_aurum).unwrap());
 
   return 0;
 }

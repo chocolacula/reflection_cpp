@@ -24,7 +24,7 @@ static void parse(const TypeInfo& info, std::string* result) {
           *result += record.first;
           *result += ": ";
 
-          auto field_info = Reflection::reflect(record.second);
+          auto field_info = Reflection::reflect(record.second.var());
           parse(field_info, result);
           *result += '\n';
         }

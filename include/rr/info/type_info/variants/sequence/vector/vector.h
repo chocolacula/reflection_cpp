@@ -33,7 +33,7 @@ struct Vector : public IVector {
     _vector->clear();
   }
 
-  size_t size() override {
+  size_t size() const override {
     return _vector->size();
   }
 

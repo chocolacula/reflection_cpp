@@ -50,11 +50,15 @@ static void serialize(const TypeInfo& info, std::string* result) {
       [result](const Object& o) {
         *result += '{';
         for (auto&& record : o.get_all_fields()) {
+          if (record.second.access() != Access::kPublic) {
+            continue;
+          }
+
           *result += '"';
           *result += record.first;
           *result += "\":";
 
-          auto field_info = Reflection::reflect(record.second);
+          auto field_info = Reflection::reflect(record.second.var());
           serialize(field_info, result);
           *result += ',';
         }

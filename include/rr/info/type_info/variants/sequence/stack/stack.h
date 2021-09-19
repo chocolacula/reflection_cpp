@@ -31,7 +31,7 @@ struct Stack : public IStack {
     _stack->clear();
   }
 
-  size_t size() override {
+  size_t size() const override {
     return _stack->size();
   }
 

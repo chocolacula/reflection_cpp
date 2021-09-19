@@ -43,7 +43,7 @@ struct StdDeque : public IList {
     _deque->clear();
   }
 
-  size_t size() override {
+  size_t size() const override {
     return _deque->size();
   }
 

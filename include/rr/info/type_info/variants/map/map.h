@@ -44,7 +44,7 @@ struct Map final : public IMap {
   void clear() override {
   }
 
-  size_t size() override {
+  size_t size() const override {
     return _map->size();
   }
 

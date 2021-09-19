@@ -35,7 +35,7 @@ struct CArray final : public IArray {
     }
   }
 
-  size_t size() override {
+  size_t size() const override {
     return size_v;
   }
 
