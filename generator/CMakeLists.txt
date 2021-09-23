@@ -6,6 +6,8 @@ project(rr_gen VERSION 0.1.0)
 add_definitions(-DVERSION="${PROJECT_VERSION}")
 
 set(CMAKE_CXX_STANDARD 17)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/output)
@@ -20,7 +22,7 @@ include_directories(tclap/include)
 include_directories(../RE-flex/include)
 link_directories(../RE-flex/lib)
 
-set(LLVM_LINK_COMPONENTS Option Support)
+# set(LLVM_LINK_COMPONENTS Option Support)
 
 find_package(LLVM REQUIRED)
 include_directories(${LLVM_INCLUDE_DIR})

@@ -10,36 +10,40 @@
 #include <unordered_map>
 #include <vector>
 
-#include "clang/Tooling/CompilationDatabase.h"
 #include "config.h"
-#include "parsing/parser_cpp.h"
+#include "file_manager.h"
+#include "parser_cpp.h"
 #include "rr/serialization/yaml.h"
 #include "self_generated/reflection.h"
+
+// tclap
 #include "tclap/CmdLine.h"
 
-std::filesystem::path current_dir() {
-  char exe_path[PATH_MAX];
-  ssize_t size = readlink("/proc/self/exe", exe_path, PATH_MAX);
+// clang
+#include "clang/Tooling/CompilationDatabase.h"
 
-  return std::filesystem::path(exe_path).remove_filename();
-}
+// inja
+#include "inja/inja.hpp"
+#include "inja/template.hpp"
 
 int main(int argc, const char** argv) {
 
   TCLAP::CmdLine cmd("Required Reflection code generator", ' ', VERSION);
 
-  auto root = current_dir();
+  ::FileManager file_manager;
 
-  root.append("config.yaml");
   TCLAP::ValueArg<std::string> c_arg("c", "config", "Explicitly specify path to the config file",  //
-                                     false, root.string(), "path");
-  root.remove_filename();
+                                     false, file_manager.root() + "config.yaml", "path");
 
   TCLAP::ValueArg<int> j_arg("j", "jobs", "Allow N jobs at once, takes CPU core number by default",  //
                              false, std::thread::hardware_concurrency(), "N");
 
+  TCLAP::SwitchArg p_arg("p", "perf", "Print performance report",  //
+                         false);
+
   cmd.add(c_arg);
   cmd.add(j_arg);
+  cmd.add(p_arg);
   cmd.parse(argc, argv);
 
   std::string c_path = c_arg.getValue();
@@ -55,35 +59,65 @@ int main(int argc, const char** argv) {
   auto conf = rr::serialization::yaml::from_stream<Config>(input).unwrap();
   input.close();
 
-  std::filesystem::path working_dir;
-
-  if (conf.root_dir[0] == '/') {
-    working_dir.assign(conf.root_dir);
-  } else {
-    working_dir = root;
-    working_dir.append(conf.root_dir);
-  }
+  auto time_1 = std::chrono::steady_clock::now();
 
   std::string err;
-  std::string compdb_file = working_dir.string() + "/" + conf.compdb_dir;
-  auto compdb = CompilationDatabase::autoDetectFromDirectory(compdb_file, err);
+  auto compdb = CompilationDatabase::autoDetectFromDirectory(file_manager.root() + conf.compdb_dir, err);
 
+  std::map<std::string, nlohmann::json> parsed;
   for (auto&& file_name : conf.input) {
+    ParserCpp parser(compdb.get(), std::move(file_manager.root() + file_name));
 
-    auto file_path = working_dir;
-    file_path.append(file_name);
-
-    ParserCpp parser(compdb.get(), std::move(file_path.string()));
-    auto json_vec = parser.parse();
+    for (auto&& json : parser.parse()) {
+      parsed.insert(std::make_pair(json["name"].get<std::string>(), json));
+    }
   }
 
-  // std::unordered_map<std::string, Node> registry;
-  // take one from input
-  // process it multithreaded
-  // put Node to the registry
+  auto time_2 = std::chrono::steady_clock::now();
 
-  // convert Node to nlohman::json, pay attention to namespaces and parent classes
-  // generate file
+  inja::Environment env;
+  auto template_object = env.parse_template(file_manager.correct_path(conf.templates.object));
+  auto template_enum = env.parse_template(file_manager.correct_path(conf.templates.for_enum));
+
+  auto the_header = file_manager.create_header(conf.output_dir);
+
+  auto reflected_dir = file_manager.correct_path(conf.output_dir) + "/reflected_types/";
+
+  if (std::filesystem::exists(reflected_dir)) {
+    std::filesystem::remove_all(reflected_dir);
+  }
+
+  std::filesystem::create_directory(reflected_dir);
+
+  for (auto&& item : parsed) {
+    auto file_name = clear_name(item.first) + ".er.h";
+
+    std::ofstream output;
+    output.open(reflected_dir + file_name);
+
+    const auto& json = item.second;
+    if (json["id"].get<int>() == 0) {
+      env.render_to(output, template_object, json);
+    } else {
+      env.render_to(output, template_enum, json);
+    }
+    the_header << "#include \"reflected_types/" << file_name << "\"\n";
+    output.close();
+  }
+
+  the_header.close();
+
+  auto time_3 = std::chrono::steady_clock::now();
+
+  if (!p_arg.getValue()) {
+    return 0;
+  }
+
+  auto analysis = std::chrono::duration<double>(time_2 - time_1).count();
+  auto generation = std::chrono::duration<double>(time_3 - time_2).count();
+
+  std::cout << rr::format("Takes for analysis {} sec, generation {}  sec, all {}  sec\n",  //
+                          analysis, generation, analysis + generation);
 
   return 0;
 }

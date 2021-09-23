@@ -6,21 +6,30 @@
 #include "rr/types/type_actions.h"
 
 // injected
-#include "{{origin_header}}"
+#include "{{origin}}"
 
 namespace rr {
 
 template <>
 struct TypeActions<{{name}}> {
-
   static TypeInfo reflect(void* value, bool is_const) {
     auto p = static_cast<{{name}}*>(value);
 
-    return Object(Var(p, is_const), {
-        {% for item in __fields -%}
-        {"{{item}}", Var(&p->{{item}})},
-        {%- endfor -%}
-    });
+    std::map<std::string_view, FieldInfo> map {
+      {% for item in fields_static -%}
+      {"{{item.alias}}", FieldInfo(&{{name}}::{{item.name}}, {{item.access}})},
+      {% endfor %}
+    };
+
+    if (p != nullptr) {
+      map.insert({
+        {% for item in fields -%}
+        {"{{item.alias}}", FieldInfo(&p->{{item.name}}, {{item.access}})},
+        {% endfor %}
+      });
+    }
+
+    return Object(Var(p, is_const), std::move(map));
   }
 };
 
@@ -36,4 +45,5 @@ TypeId TypeId::get({{name}}* /*unused*/) {
 }
 
 }  // namespace rr
+
 //clang-format on

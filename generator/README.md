@@ -8,21 +8,28 @@ format of an object entity is
 
 ```js
 {
-  name,  // full name including all namespaces
-  template_parameters,
-  bases [
-    { access,
-      name }  // full name of base class
+  "id" : 0, // 0 is object id
+  "name" : string,  // full name including all namespaces
+  "origin" : string, // file path to origin file for analysis
+  "bases" : [
+    {
+      "access" : int,
+      "name" : string,
+    }
   ],
-  fields [
-    { access,  // public, private or protected
-      name,
-      alias }  // is equal to <name> if ER_ALIAS attribute didn't parse
+  "fields_static" : [
+    {
+      "access" : int,
+      "name" : string,
+      "alias" : string // equal "name" if ER_ALIAS attribute didn't parse
+    }
   ],
-  static_fields [
-    { access,
-      name,
-      alias }
+  "fields" : [
+    {
+      "access" : int,
+      "name" : string,
+      "alias" : string
+    }
   ]
 }
 ```
@@ -31,10 +38,14 @@ format of an enum entity is
 
 ```js
 {
-  name, // including all namespaces
-  constants [
-    { name,
-      alias }
+  "id" : 1, // 1 is enum id
+  "name" : string,  // full name including all namespaces
+  "origin" : string, // file path to origin file for analysis
+  "constants" : [
+    {
+      "name" : string,
+      "alias" : string
+    }
   ]
 }
 ```

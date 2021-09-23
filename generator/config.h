@@ -7,7 +7,6 @@
 
 ER_REFLECT()
 struct Config {
-  std::string root_dir;
   std::string compdb_dir;
 
   struct Templates {
